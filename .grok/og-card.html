@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>MotoHaus Parts — share card</title>
+<style>
+  @font-face {
+    font-family: "Oswald";
+    src: url("fonts/oswald.ttf") format("truetype");
+    font-weight: 200 700;
+    font-style: normal;
+    font-display: block;
+  }
+  @font-face {
+    font-family: "Outfit";
+    src: url("fonts/outfit.ttf") format("truetype");
+    font-weight: 200 900;
+    font-style: normal;
+    font-display: block;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body {
+    width: 1200px;
+    height: 630px;
+    overflow: hidden;
+    background: #0d0d13;
+  }
+  .card {
+    position: relative;
+    width: 1200px;
+    height: 630px;
+    background: #0d0d13;
+    overflow: hidden;
+    color: #f2f2f5;
+  }
+
+  .glow-orange {
+    position: absolute;
+    width: 720px; height: 520px;
+    left: -180px; bottom: -220px;
+    background: radial-gradient(circle, rgba(255,106,61,0.38) 0%, rgba(255,106,61,0) 68%);
+    pointer-events: none;
+  }
+  .glow-purple {
+    position: absolute;
+    width: 640px; height: 480px;
+    right: -140px; top: -160px;
+    background: radial-gradient(circle, rgba(139,107,255,0.34) 0%, rgba(139,107,255,0) 70%);
+    pointer-events: none;
+  }
+
+  .hero {
+    position: absolute;
+    right: -90px;
+    top: -40px;
+    width: 760px;
+    height: 760px;
+    object-fit: cover;
+    filter: saturate(1.05) contrast(1.08);
+    mask-image: radial-gradient(circle at 48% 46%, #000 34%, transparent 72%);
+    -webkit-mask-image: radial-gradient(circle at 48% 46%, #000 34%, transparent 72%);
+  }
+
+  .sprocket {
+    position: absolute;
+    left: -70px;
+    bottom: -80px;
+    width: 340px;
+    height: 340px;
+    object-fit: cover;
+    opacity: 0.55;
+    filter: saturate(0.9) contrast(1.1);
+    mask-image: radial-gradient(circle at 50% 50%, #000 40%, transparent 72%);
+    -webkit-mask-image: radial-gradient(circle at 50% 50%, #000 40%, transparent 72%);
+  }
+
+  .oil {
+    position: absolute;
+    right: 40px;
+    bottom: 28px;
+    width: 168px;
+    height: 210px;
+    object-fit: cover;
+    opacity: 0.78;
+    filter: drop-shadow(0 18px 28px rgba(0,0,0,0.55));
+    mask-image: linear-gradient(to top, transparent 0%, #000 18%, #000 100%);
+    -webkit-mask-image: linear-gradient(to top, transparent 0%, #000 18%, #000 100%);
+  }
+
+  .vignette {
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(ellipse at 50% 48%, rgba(13,13,19,0.12) 0%, rgba(13,13,19,0.55) 58%, rgba(13,13,19,0.88) 100%),
+      linear-gradient(90deg, rgba(13,13,19,0.82) 0%, rgba(13,13,19,0.35) 42%, rgba(13,13,19,0.2) 62%, rgba(13,13,19,0.72) 100%);
+    pointer-events: none;
+  }
+
+  .scan {
+    position: absolute;
+    inset: 0;
+    background: repeating-linear-gradient(
+      to bottom,
+      rgba(255,255,255,0.015) 0px,
+      rgba(255,255,255,0.015) 1px,
+      transparent 1px,
+      transparent 3px
+    );
+    opacity: 0.35;
+    pointer-events: none;
+  }
+
+  .frame {
+    position: absolute;
+    inset: 22px;
+    border: 1px solid rgba(242,242,245,0.08);
+    border-radius: 4px;
+    pointer-events: none;
+  }
+  .frame::before {
+    content: "";
+    position: absolute;
+    left: 18px; right: 18px; top: 0;
+    height: 2px;
+    background: linear-gradient(90deg, #8b6bff, #ff6a3d);
+    opacity: 0.9;
+  }
+
+  .lockup {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    width: 760px;
+    text-align: center;
+    z-index: 4;
+  }
+
+  .eyebrow {
+    font-family: "Outfit", "Liberation Sans Narrow", sans-serif;
+    font-weight: 600;
+    font-size: 15px;
+    letter-spacing: 0.42em;
+    text-transform: uppercase;
+    color: #ff6a3d;
+    margin-bottom: 18px;
+  }
+
+  .title {
+    font-family: "Oswald", "Liberation Sans Narrow", sans-serif;
+    font-weight: 650;
+    font-size: 118px;
+    line-height: 0.88;
+    letter-spacing: 0.02em;
+    color: #f2f2f5;
+    text-shadow: 0 8px 40px rgba(0,0,0,0.65), 0 0 24px rgba(139,107,255,0.18);
+  }
+  .title .line2 {
+    display: block;
+    font-size: 92px;
+    letter-spacing: 0.34em;
+    padding-left: 0.34em;
+    color: #f2f2f5;
+    margin-top: 6px;
+  }
+  .title .accent {
+    background: linear-gradient(90deg, #f2f2f5 0%, #f2f2f5 58%, #ff6a3d 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  .rule {
+    width: 92px;
+    height: 3px;
+    margin: 22px auto 16px;
+    background: linear-gradient(90deg, #8b6bff, #ff6a3d);
+    border-radius: 2px;
+  }
+
+  .tag {
+    font-family: "Outfit", "Liberation Sans", sans-serif;
+    font-weight: 400;
+    font-size: 22px;
+    letter-spacing: 0.06em;
+    color: rgba(242,242,245,0.82);
+  }
+</style>
+</head>
+<body>
+  <div class="card">
+    <img class="hero" src="og-assets/tire.jpg" alt="" />
+    <img class="sprocket" src="og-assets/chain-sprocket.jpg" alt="" />
+    <img class="oil" src="og-assets/engine-oil.jpg" alt="" />
+    <div class="glow-orange"></div>
+    <div class="glow-purple"></div>
+    <div class="vignette"></div>
+    <div class="scan"></div>
+    <div class="frame"></div>
+    <div class="lockup">
+      <div class="eyebrow">Motorcycle parts shop</div>
+      <div class="title">
+        <span class="accent">MotoHaus</span>
+        <span class="line2">PARTS</span>
+      </div>
+      <div class="rule"></div>
+      <div class="tag">Parts that keep riders moving</div>
+    </div>
+  </div>
+</body>
+</html>

@@ -1,0 +1,1674 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Chattery Echo — Dashboard</title>
+<style>
+  :root{
+    --bg:#0d0d13;
+    --panel:#17171f;
+    --panel-2:#1b1b25;
+    --border:#26262f;
+    --border-soft:#212129;
+    --text:#f2f2f5;
+    --text-dim:#9494a3;
+    --text-dimmer:#6c6c7a;
+    --orange-1:#ff6a3d;
+    --orange-2:#ff2d55;
+    --purple-1:#8b6bff;
+    --purple-2:#6a3df5;
+    --green:#3ddc8a;
+    --red:#ff5a5a;
+    --radius-lg:16px;
+    --radius-md:12px;
+    --radius-sm:8px;
+    --space-page:clamp(16px,2.4vw,28px);
+    --space-section:clamp(14px,1.6vw,18px);
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;height:100%;}
+  :where(button,input,select,[tabindex]):focus-visible{outline:2px solid var(--purple-1);outline-offset:2px;}
+  body{
+    background:#050507;
+    font-family:"Inter","Segoe UI",Helvetica,Arial,sans-serif;
+    color:var(--text);
+    -webkit-font-smoothing:antialiased;
+    min-height:100vh;
+  }
+  button,input,select{font-family:inherit;}
+
+  /* ---------------- APP SHELL (full screen) ---------------- */
+  .app{
+    width:100%;
+    min-height:100vh;
+    background:var(--bg);
+    display:flex;
+    overflow:hidden;
+  }
+
+  /* ---------------- SIDEBAR ---------------- */
+  .sidebar{
+    width:220px;
+    flex-shrink:0;
+    padding:22px 16px 18px;
+    display:flex;
+    flex-direction:column;
+    border-right:1px solid var(--border-soft);
+    height:100vh;
+    position:sticky;
+    top:0;
+    overflow-y:auto;
+  }
+  .logo{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    margin-bottom:22px;
+    padding:0 4px;
+  }
+  .logo-mark{
+    width:26px;height:26px;border-radius:50%;
+    background:conic-gradient(from 180deg,var(--purple-1),var(--orange-1),var(--purple-1));
+    flex-shrink:0;
+  }
+  .logo-text{font-size:14.5px;font-weight:600;color:var(--text);white-space:nowrap;}
+
+  .side-search{
+    display:flex;align-items:center;gap:8px;
+    background:var(--panel);
+    border:1px solid var(--border-soft);
+    border-radius:10px;
+    padding:8px 10px;
+    margin-bottom:20px;
+  }
+  .side-search svg{flex-shrink:0;opacity:.5;}
+  .side-search input{
+    background:transparent;border:none;outline:none;
+    color:var(--text-dim);font-size:12.5px;width:100%;
+  }
+  .side-search input::placeholder{color:var(--text-dimmer);}
+
+  .nav-group{margin-bottom:18px;}
+  .nav-label{
+    font-size:10.5px;letter-spacing:.03em;color:var(--text-dimmer);
+    padding:0 8px 8px;
+  }
+  .nav-item{
+    display:flex;align-items:center;gap:10px;
+    padding:9px 10px;border-radius:9px;
+    font-size:13px;color:var(--text-dim);
+    cursor:pointer;margin-bottom:2px;
+    transition:background .15s ease;
+    user-select:none;
+  }
+  .nav-item svg{opacity:.75;flex-shrink:0;}
+  .nav-item.active{
+    background:var(--panel-2);
+    color:var(--text);
+    border:1px solid var(--border-soft);
+  }
+  .nav-item.active svg{opacity:1;}
+  .nav-item:hover:not(.active){background:#141419;}
+
+  .promo{
+    margin-top:auto;
+    border-radius:14px;
+    padding:16px 14px 60px;
+    background:
+      radial-gradient(120% 100% at 0% 0%, rgba(255,255,255,.12), transparent 55%),
+      linear-gradient(160deg,var(--orange-1),var(--orange-2) 70%);
+    position:relative;
+    overflow:hidden;
+    margin-bottom:14px;
+  }
+  .promo .badge{
+    display:inline-block;font-size:9.5px;font-weight:700;
+    background:rgba(0,0,0,.28);color:#fff;
+    padding:3px 7px;border-radius:5px;margin-bottom:10px;
+    letter-spacing:.02em;
+  }
+  .promo h4{
+    margin:0 0 2px;font-size:16px;line-height:1.25;font-weight:700;color:#fff;
+    max-width:120px;
+  }
+  .promo-btn{
+    position:absolute;left:14px;bottom:14px;right:14px;
+    background:#101014;color:#fff;border:none;
+    border-radius:20px;padding:8px 12px;min-height:34px;font-size:12px;font-weight:600;
+    cursor:pointer;
+  }
+  .promo-circle{
+    position:absolute;right:-18px;top:-18px;width:70px;height:70px;
+    border-radius:50%;background:rgba(255,255,255,.15);
+  }
+
+  .logout{
+    display:flex;align-items:center;gap:10px;
+    padding:9px 10px;font-size:13px;color:var(--text-dim);cursor:pointer;
+  }
+  .logout:hover{color:var(--text);}
+
+  /* ---------------- MAIN ---------------- */
+  .main{
+    flex:1;
+    padding:clamp(18px,2.2vw,26px) var(--space-page) 24px;
+    min-width:0;
+    display:flex;
+    flex-direction:column;
+    gap:18px;
+    height:100vh;
+    overflow-y:auto;
+  }
+  .topbar{
+    display:flex;align-items:center;justify-content:space-between;gap:16px;
+  }
+  .topbar h1{font-size:clamp(19px,2vw,22px);margin:0;font-weight:700;min-width:0;overflow-wrap:anywhere;}
+  .top-right{display:flex;align-items:center;gap:12px;position:relative;}
+  .top-search{
+    display:flex;align-items:center;gap:8px;
+    background:var(--panel);border:1px solid var(--border-soft);
+    border-radius:10px;padding:9px 12px;width:min(230px,28vw);min-width:150px;
+  }
+  .top-search input{
+    background:transparent;border:none;outline:none;color:var(--text-dim);
+    font-size:12.5px;width:100%;
+  }
+  .top-search input::placeholder{color:var(--text-dimmer);}
+  .icon-btn{
+    width:36px;height:36px;border-radius:10px;
+    background:var(--panel);border:1px solid var(--border-soft);
+    display:flex;align-items:center;justify-content:center;
+    cursor:pointer;position:relative;
+  }
+  .icon-btn:hover{background:var(--panel-2);}
+  .notif-dot{position:absolute;top:6px;right:7px;width:6px;height:6px;border-radius:50%;background:var(--orange-1);}
+
+  .tabs{
+    display:flex;gap:clamp(16px,2.2vw,26px);border-bottom:1px solid var(--border-soft);
+    padding-bottom:0;
+    overflow-x:auto;scrollbar-width:none;
+  }
+  .tabs::-webkit-scrollbar{display:none;}
+  .tab{
+    font-size:13px;color:var(--text-dimmer);padding-bottom:12px;
+    cursor:pointer;position:relative;
+  }
+  .tab.active{color:var(--text);font-weight:600;}
+  .tab.active::after{
+    content:"";position:absolute;left:0;right:0;bottom:-1px;height:2px;
+    background:linear-gradient(90deg,var(--purple-1),var(--orange-1));
+    border-radius:2px;
+  }
+
+  /* stat cards */
+  .stats{
+    display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,190px),1fr));gap:14px;
+  }
+  .stat-card{
+    background:var(--panel);border:1px solid var(--border-soft);
+    border-radius:var(--radius-md);padding:14px;
+    display:flex;flex-direction:column;gap:10px;
+  }
+  .stat-card.expense{
+    background:linear-gradient(160deg,var(--orange-1),var(--orange-2) 85%);
+    border:none;
+  }
+  .stat-card.customers{
+    background:linear-gradient(160deg,var(--purple-1),var(--purple-2) 85%);
+    border:none;
+  }
+  .stat-top{display:flex;align-items:center;justify-content:space-between;}
+  .stat-icon{
+    width:30px;height:30px;border-radius:9px;
+    background:rgba(255,255,255,.06);
+    display:flex;align-items:center;justify-content:center;
+  }
+  .stat-card.expense .stat-icon,.stat-card.customers .stat-icon{
+    background:rgba(255,255,255,.2);
+  }
+  .stat-label{font-size:12px;color:var(--text-dim);}
+  .stat-card.expense .stat-label,.stat-card.customers .stat-label{color:rgba(255,255,255,.85);}
+  .stat-value{font-size:19px;font-weight:700;}
+  .stat-sub{font-size:10.5px;color:var(--text-dimmer);display:flex;align-items:center;gap:6px;}
+  .stat-card.expense .stat-sub,.stat-card.customers .stat-sub{color:rgba(255,255,255,.75);}
+  .pill{
+    font-size:10px;font-weight:700;padding:2px 6px;border-radius:6px;
+  }
+  .pill.up{background:rgba(61,220,138,.15);color:var(--green);}
+  .pill.down{background:rgba(255,90,90,.15);color:#ff7a7a;}
+  .stat-card.expense .pill,.stat-card.customers .pill{background:rgba(0,0,0,.22);color:#fff;}
+
+  /* content grid */
+  .content-grid{
+    display:grid;grid-template-columns:minmax(0,1.65fr) minmax(260px,1fr);gap:16px;
+    flex:1;min-height:0;
+  }
+  .left-col{display:flex;flex-direction:column;gap:16px;min-width:0;}
+  .right-col{display:flex;flex-direction:column;gap:16px;min-width:0;}
+
+  .panel{
+    background:var(--panel);border:1px solid var(--border-soft);
+    border-radius:var(--radius-lg);padding:16px 16px 8px;
+  }
+  .panel-head{
+    display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;
+  }
+  .panel-title{font-size:14px;font-weight:700;}
+  .legend{display:flex;gap:16px;font-size:11.5px;color:var(--text-dim);}
+  .legend span{display:inline-flex;align-items:center;gap:6px;}
+  .dot{width:7px;height:7px;border-radius:50%;display:inline-block;}
+  .dot.orange{background:var(--orange-1);}
+  .dot.purple{background:var(--purple-1);}
+  .dropdown{
+    font-size:11px;color:var(--text-dim);background:var(--panel-2);
+    border:1px solid var(--border-soft);border-radius:7px;padding:5px 9px;
+    display:flex;align-items:center;gap:5px;cursor:pointer;user-select:none;
+  }
+  .dropdown:hover{color:var(--text);}
+
+  .chart-wrap{width:100%;}
+  .chart-wrap svg{width:100%;display:block;}
+  .month-labels{
+    display:flex;justify-content:space-between;font-size:10px;color:var(--text-dimmer);
+    padding:2px 4px 6px;
+  }
+  .month-labels .hl{color:var(--orange-1);font-weight:700;}
+
+  .mini-panel{background:var(--panel);border:1px solid var(--border-soft);border-radius:var(--radius-lg);padding:14px 16px;}
+  .mini-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;}
+  .mini-title{font-size:13px;font-weight:700;}
+  .mini-menu{color:var(--text-dimmer);font-size:16px;cursor:pointer;position:relative;}
+  .mini-figure{display:flex;align-items:baseline;gap:8px;margin:4px 0 10px;}
+  .mini-figure .val{font-size:20px;font-weight:700;}
+  .bar-chart{display:flex;align-items:flex-end;gap:8px;height:70px;padding-top:6px;}
+  .bar-col{flex:1;display:flex;flex-direction:column;align-items:center;gap:6px;}
+  .bar{width:100%;border-radius:6px 6px 3px 3px;background:#26262f;}
+  .bar.hi{background:linear-gradient(180deg,var(--purple-1),var(--purple-2));}
+  .bar-col .amt{font-size:9px;color:var(--text-dimmer);}
+  .bar-col .mo{font-size:10px;color:var(--text-dim);}
+
+  .sales-figure{font-size:19px;font-weight:700;}
+  .sales-sub{font-size:10.5px;color:var(--text-dimmer);}
+
+  /* table */
+  .table-panel{background:var(--panel);border:1px solid var(--border-soft);border-radius:var(--radius-lg);padding:14px 16px 6px;margin-top:2px;overflow:hidden;}
+  .table-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;flex-wrap:wrap;gap:10px;}
+  .table-head .left{display:flex;align-items:center;gap:8px;}
+  .table-head .count{font-size:10px;background:var(--panel-2);color:var(--purple-1);padding:2px 7px;border-radius:6px;font-weight:700;}
+  .table-icons{display:flex;gap:10px;color:var(--text-dimmer);}
+  .table-icons span{cursor:pointer;padding:3px 5px;min-width:30px;min-height:30px;display:inline-flex;align-items:center;justify-content:center;border-radius:6px;}
+  .table-icons span:hover{background:var(--panel-2);color:var(--text);}
+  .table-icons span.on{background:var(--panel-2);color:var(--orange-1);}
+  table{width:100%;border-collapse:collapse;font-size:12px;}
+  .table-scroll{overflow-x:auto;max-width:100%;}
+  .table-scroll table{min-width:680px;}
+  th{
+    text-align:left;font-weight:500;color:var(--text-dimmer);font-size:11px;
+    padding:6px 8px;border-bottom:1px solid var(--border-soft);
+  }
+  td{padding:9px 8px;border-bottom:1px solid #1c1c24;color:var(--text-dim);}
+  table.compact td{padding:5px 8px;}
+  tr:last-child td{border-bottom:none;}
+  .status{display:inline-flex;align-items:center;gap:6px;}
+  .status.completed{color:var(--orange-1);}
+  .status.pending{color:var(--purple-1);}
+  .status .d{width:6px;height:6px;border-radius:50%;background:currentColor;display:inline-block;}
+  .row-actions{display:flex;gap:6px;}
+  .row-actions button{background:none;border:none;color:var(--text-dimmer);cursor:pointer;font-size:13px;padding:2px 4px;min-width:30px;min-height:30px;border-radius:6px;}
+  .row-actions button:hover{background:var(--panel-2);color:var(--text);}
+
+  /* generic small button */
+  .btn{border-radius:9px;padding:8px 12px;min-height:34px;font-size:12.5px;line-height:1.2;font-weight:600;cursor:pointer;border:none;display:inline-flex;align-items:center;justify-content:center;gap:5px;white-space:nowrap;}
+  .btn-primary{background:linear-gradient(160deg,var(--purple-1),var(--purple-2));color:#fff;}
+  .btn-primary:hover{filter:brightness(1.08);}
+  .btn-primary[disabled]{opacity:.55;cursor:not-allowed;filter:none;}
+  .btn-secondary{background:var(--panel-2);border:1px solid var(--border-soft);color:var(--text-dim);}
+  .btn-secondary:hover{color:var(--text);}
+  .btn-danger{background:rgba(255,90,90,.14);color:#ff8a8a;border:1px solid rgba(255,90,90,.3);}
+  .btn-danger:hover{background:rgba(255,90,90,.22);}
+  #addOrderBtn,#addCustomerBtn{width:auto;flex:0 0 auto;}
+  .spinner{width:13px;height:13px;border-radius:50%;border:2px solid rgba(255,255,255,.35);border-top-color:#fff;animation:spin .6s linear infinite;}
+  @keyframes spin{to{transform:rotate(360deg);}}
+
+  /* page containers */
+  .page{display:none;flex-direction:column;gap:18px;flex:1;min-height:0;}
+  .page.active{display:flex;}
+
+  .toolbar{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;}
+  .empty-state{padding:46px 10px;text-align:center;color:var(--text-dimmer);font-size:13px;}
+  .empty-state .big{font-size:26px;margin-bottom:8px;}
+
+  .card-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px;}
+  .cust-card{background:var(--panel);border:1px solid var(--border-soft);border-radius:var(--radius-md);padding:14px;display:flex;flex-direction:column;gap:6px;}
+  .cust-avatar{width:34px;height:34px;border-radius:50%;background:conic-gradient(from 90deg,var(--purple-1),var(--orange-1));display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff;}
+  .cust-name{font-size:13px;font-weight:700;}
+  .cust-email{font-size:11.5px;color:var(--text-dimmer);}
+  .cust-joined{font-size:10.5px;color:var(--text-dimmer);}
+  .cust-foot{display:flex;justify-content:space-between;align-items:center;margin-top:6px;}
+
+  .settings-panel{max-width:480px;display:flex;flex-direction:column;gap:14px;}
+  .form-group{display:flex;flex-direction:column;gap:6px;}
+  .form-group label{font-size:11.5px;color:var(--text-dim);}
+  .form-group input,.form-group select{
+    background:var(--panel-2);border:1px solid var(--border-soft);border-radius:9px;
+    padding:9px 11px;color:var(--text);font-size:13px;outline:none;
+  }
+  .form-group input:focus,.form-group select:focus{border-color:var(--purple-1);}
+  .form-row{display:flex;gap:10px;}
+  .form-row .form-group{flex:1;}
+  .hint{font-size:11px;color:var(--text-dimmer);}
+  .faq-item{background:var(--panel);border:1px solid var(--border-soft);border-radius:var(--radius-md);padding:14px 16px;cursor:pointer;}
+  .faq-q{font-size:13px;font-weight:600;display:flex;justify-content:space-between;align-items:center;}
+  .faq-a{font-size:12.5px;color:var(--text-dim);margin-top:8px;display:none;line-height:1.5;}
+  .faq-item.open .faq-a{display:block;}
+
+  /* modal */
+  .modal-overlay{position:fixed;inset:0;background:rgba(4,4,8,.62);display:none;align-items:center;justify-content:center;z-index:80;padding:16px;}
+  .modal-overlay.active{display:flex;}
+  .modal{background:var(--panel);border:1px solid var(--border-soft);border-radius:var(--radius-lg);padding:20px;width:400px;max-width:100%;max-height:90vh;overflow-y:auto;}
+  .modal h3{margin:0 0 14px;font-size:16px;}
+  .modal-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:16px;}
+  .field-error{font-size:11px;color:var(--red);min-height:14px;}
+
+  /* toasts */
+  .toast-wrap{position:fixed;bottom:18px;right:18px;display:flex;flex-direction:column;gap:8px;z-index:120;max-width:280px;}
+  .toast{background:var(--panel);border:1px solid var(--border-soft);border-left:3px solid var(--purple-1);padding:11px 14px;border-radius:10px;font-size:12.5px;box-shadow:0 14px 34px rgba(0,0,0,.5);animation:toastIn .18s ease;}
+  .toast.success{border-left-color:var(--green);}
+  .toast.error{border-left-color:var(--red);}
+  @keyframes toastIn{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:translateY(0);}}
+
+  /* dropdown panel (notifications / chart menu) */
+  .dd-panel{position:absolute;top:44px;right:0;background:var(--panel);border:1px solid var(--border-soft);border-radius:12px;padding:8px;width:230px;box-shadow:0 18px 40px rgba(0,0,0,.5);display:none;z-index:60;}
+  .dd-panel.active{display:block;}
+  .dd-item{padding:9px 10px;border-radius:8px;font-size:12px;color:var(--text-dim);cursor:pointer;}
+  .dd-item:hover{background:var(--panel-2);color:var(--text);}
+  .dd-item.unread{color:var(--text);}
+  .dd-empty{padding:14px 10px;font-size:12px;color:var(--text-dimmer);text-align:center;}
+
+  /* login screen */
+  .login-screen{min-height:100vh;width:100%;display:flex;align-items:center;justify-content:center;background:#050507;}
+  .login-card{width:340px;max-width:92vw;background:var(--panel);border:1px solid var(--border-soft);border-radius:var(--radius-lg);padding:28px 26px;box-shadow:0 40px 90px -30px rgba(0,0,0,.8);}
+  .login-card .logo{margin-bottom:22px;justify-content:center;}
+  .login-card h2{font-size:17px;margin:0 0 4px;text-align:center;}
+  .login-card p.sub{font-size:12px;color:var(--text-dimmer);text-align:center;margin:0 0 20px;}
+  .login-card .btn-primary{width:100%;justify-content:center;margin-top:6px;}
+  .login-error{background:rgba(255,90,90,.1);border:1px solid rgba(255,90,90,.3);color:#ff8a8a;font-size:12px;padding:8px 10px;border-radius:8px;margin-bottom:12px;display:none;}
+  .login-error.active{display:block;}
+  .demo-hint{margin-top:16px;font-size:11px;color:var(--text-dimmer);text-align:center;line-height:1.6;}
+  .demo-hint b{color:var(--text-dim);}
+
+  @media (max-width:1100px){
+    .sidebar{width:196px;padding-left:12px;padding-right:12px;}
+    .content-grid{grid-template-columns:minmax(0,1.4fr) minmax(240px,1fr);}
+    .top-search{width:190px;}
+  }
+
+  @media (max-width:900px){
+    .app{flex-direction:column;}
+    .sidebar{width:100%;flex-direction:row;align-items:center;gap:10px;height:auto;min-height:64px;position:relative;padding:12px var(--space-page);overflow:visible;}
+    .sidebar .logo{margin:0 auto 0 0;}
+    .sidebar .side-search{display:none;}
+    .sidebar .nav-group{display:flex;align-items:center;gap:4px;margin:0;}
+    .sidebar .nav-label{display:none;}
+    .sidebar .nav-item{margin:0;padding:9px;border:1px solid transparent;font-size:13px;}
+    .sidebar .nav-item svg{width:17px;height:17px;}
+    .sidebar .logout{padding:9px;font-size:0;}
+    .sidebar .logout svg{width:17px;height:17px;}
+    .sidebar .promo{display:none;}
+    .main{height:auto;}
+    .content-grid{grid-template-columns:1fr;}
+    .right-col{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));}
+    .top-search{width:min(190px,30vw);}
+    .page{gap:var(--space-section);}
+  }
+
+  @media (max-width:600px){
+    .sidebar{align-items:flex-start;flex-wrap:wrap;}
+    .sidebar .logo{width:100%;}
+    .sidebar .nav-group{flex:1;justify-content:flex-start;min-width:0;}
+    .sidebar .nav-item{flex:1;justify-content:center;}
+    .sidebar .nav-item{font-size:0;}
+    .sidebar .logout{margin-left:auto;}
+    .topbar{align-items:flex-start;flex-wrap:wrap;}
+    .top-right{width:100%;}
+    .top-search{flex:1;width:auto;min-width:0;}
+    .stats{grid-template-columns:1fr 1fr;gap:10px;}
+    .stat-card{padding:12px;gap:8px;}
+    .stat-value{font-size:18px;}
+    .panel-head,.mini-head{align-items:flex-start;flex-wrap:wrap;gap:8px;}
+    .legend{gap:10px;flex-wrap:wrap;}
+    .right-col{grid-template-columns:1fr;}
+    .table-panel{padding-left:12px;padding-right:12px;}
+    .table-head .left{min-width:0;flex-wrap:wrap;}
+    .toolbar{align-items:stretch;}
+    .toolbar .btn,.table-head > .btn{width:100%;justify-content:center;}
+    .form-row{flex-direction:column;}
+    .settings-panel{max-width:none;}
+    .modal-overlay{padding:10px;align-items:flex-end;}
+    .modal{width:100% !important;border-radius:var(--radius-md);padding:16px;max-height:calc(100vh - 20px);}
+    .modal-actions{flex-direction:column-reverse;}
+    .modal-actions .btn{width:100%;justify-content:center;}
+    .toast-wrap{left:12px;right:12px;bottom:12px;max-width:none;}
+  }
+
+  @media (max-width:380px){
+    .stats{grid-template-columns:1fr;}
+    .sidebar .nav-item{padding-left:7px;padding-right:7px;}
+  }
+
+  /* Motorcycle shop application layer */
+  .shop-brand{margin-bottom:26px;}
+  .shop-brand .logo-text{font-size:13px;line-height:1.2;white-space:normal;}
+  .shop-role{font-size:10px;color:var(--orange-1);margin:3px 0 0 34px;}
+  .shop-nav-label{font-size:10px;letter-spacing:.04em;color:var(--text-dimmer);padding:0 8px 8px;text-transform:uppercase;}
+  .shop-nav-item{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:9px;font-size:13px;color:var(--text-dim);cursor:pointer;margin-bottom:2px;}
+  .shop-nav-item svg{opacity:.75;flex-shrink:0;}
+  .shop-nav-item.active{background:var(--panel-2);color:var(--text);border:1px solid var(--border-soft);}
+  .shop-nav-item.active svg{opacity:1;}
+  .shop-nav-item:hover:not(.active){background:#141419;}
+  .shop-kicker{font-size:11px;color:var(--text-dimmer);margin:0 0 4px;}
+  .shop-page{display:none;flex-direction:column;gap:18px;min-width:0;}
+  .shop-page.active{display:flex;}
+  .shop-page-head{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap;}
+  .shop-page-head h2{margin:0;font-size:clamp(19px,2vw,24px);}
+  .shop-page-actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+  .shop-stat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,180px),1fr));gap:14px;}
+  .shop-stat-card{background:var(--panel);border:1px solid var(--border-soft);border-radius:var(--radius-md);padding:14px;min-width:0;}
+  .shop-stat-card .label{font-size:11px;color:var(--text-dim);}
+  .shop-stat-card .value{font-size:22px;font-weight:700;margin-top:8px;overflow-wrap:anywhere;}
+  .shop-stat-card .meta{font-size:10.5px;color:var(--text-dimmer);margin-top:5px;}
+  .shop-stat-card.alert{border-color:rgba(255,106,61,.4);}
+  .shop-stat-card.alert .value{color:var(--orange-1);}
+  .shop-grid-2{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(280px,1fr);gap:16px;}
+  .shop-panel{background:var(--panel);border:1px solid var(--border-soft);border-radius:var(--radius-lg);padding:16px;min-width:0;}
+  .shop-panel h3{font-size:14px;margin:0 0 12px;}
+  .shop-panel-head{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:10px;}
+  .shop-table-wrap{overflow-x:auto;max-width:100%;}
+  .shop-table{width:100%;border-collapse:collapse;font-size:12px;min-width:700px;}
+  .shop-table th{white-space:nowrap;}
+  .shop-table td,.shop-table th{padding:9px 8px;text-align:left;border-bottom:1px solid var(--border-soft);vertical-align:middle;}
+  .shop-table td{color:var(--text-dim);}
+  .shop-table tr:last-child td{border-bottom:0;}
+  .shop-table .primary-cell{color:var(--text);font-weight:600;}
+  .shop-badge{display:inline-flex;align-items:center;gap:5px;padding:3px 7px;border-radius:6px;font-size:10px;font-weight:700;white-space:nowrap;}
+  .shop-badge.good{background:rgba(61,220,138,.12);color:var(--green);}
+  .shop-badge.warn{background:rgba(255,106,61,.14);color:var(--orange-1);}
+  .shop-badge.muted{background:rgba(148,148,163,.12);color:var(--text-dim);}
+  .shop-badge.info{background:rgba(139,107,255,.14);color:var(--purple-1);}
+  .shop-toolbar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+  .shop-toolbar input,.shop-toolbar select{min-width:150px;flex:1;background:var(--panel-2);border:1px solid var(--border-soft);border-radius:9px;padding:9px 10px;color:var(--text);font-size:12px;outline:none;}
+  .shop-toolbar input:focus,.shop-toolbar select:focus{border-color:var(--purple-1);}
+  .shop-list{display:flex;flex-direction:column;gap:8px;}
+  .shop-list-row{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--border-soft);}
+  .shop-list-row:last-child{border-bottom:0;}
+  .shop-list-row strong{font-size:12px;color:var(--text);display:block;overflow-wrap:anywhere;}
+  .shop-list-row span{font-size:10.5px;color:var(--text-dimmer);display:block;margin-top:3px;}
+  .shop-price{font-size:12px;font-weight:700;color:var(--text);white-space:nowrap;}
+  .shop-bar-list{display:flex;flex-direction:column;gap:11px;}
+  .shop-bar-line{display:grid;grid-template-columns:minmax(90px,1fr) 2fr auto;gap:8px;align-items:center;font-size:11px;}
+  .shop-bar-track{height:7px;background:var(--panel-2);border-radius:5px;overflow:hidden;}
+  .shop-bar-fill{height:100%;background:linear-gradient(90deg,var(--purple-1),var(--orange-1));border-radius:inherit;}
+  .shop-cart{display:flex;flex-direction:column;gap:10px;}
+  .shop-cart-item{display:grid;grid-template-columns:minmax(0,1fr) auto auto;gap:8px;align-items:center;padding:10px 0;border-bottom:1px solid var(--border-soft);}
+  .shop-cart-item strong{font-size:12px;overflow-wrap:anywhere;}
+  .shop-qty{display:inline-flex;align-items:center;gap:6px;}
+  .shop-qty button{width:28px;height:28px;border:1px solid var(--border-soft);border-radius:7px;background:var(--panel-2);color:var(--text);cursor:pointer;}
+  .shop-qty span{min-width:18px;text-align:center;font-size:12px;}
+  .shop-total{display:flex;justify-content:space-between;align-items:center;padding-top:12px;font-size:13px;font-weight:700;}
+  .shop-empty{padding:34px 10px;text-align:center;color:var(--text-dimmer);font-size:12px;}
+  .shop-empty strong{display:block;color:var(--text-dim);font-size:14px;margin-bottom:5px;}
+  .shop-form-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;}
+  .shop-form-grid .full{grid-column:1/-1;}
+  .shop-form-group{display:flex;flex-direction:column;gap:6px;}
+  .shop-form-group label{font-size:11px;color:var(--text-dim);}
+  .shop-form-group input,.shop-form-group select,.shop-form-group textarea{width:100%;background:var(--panel-2);border:1px solid var(--border-soft);border-radius:9px;padding:9px 10px;color:var(--text);font-size:12px;outline:none;resize:vertical;}
+  .shop-form-group input:focus,.shop-form-group select:focus,.shop-form-group textarea:focus{border-color:var(--purple-1);}
+  .shop-modal-copy{color:var(--text-dim);font-size:12px;line-height:1.5;margin:0 0 14px;}
+  .shop-receipt{border:1px dashed var(--border);padding:14px;border-radius:10px;margin-top:12px;}
+  .shop-receipt h4{margin:0 0 8px;font-size:13px;}
+  .shop-receipt p{margin:4px 0;font-size:11px;color:var(--text-dim);}
+  @media (max-width:900px){.shop-grid-2{grid-template-columns:1fr;}.shop-nav-item{font-size:13px;}}
+  @media (max-width:600px){.shop-page-actions{width:100%;}.shop-page-actions .btn{flex:1;}.shop-form-grid{grid-template-columns:1fr;}.shop-form-grid .full{grid-column:auto;}.shop-toolbar input,.shop-toolbar select{min-width:0;width:100%;}.shop-toolbar .btn{flex:1;}.shop-bar-line{grid-template-columns:minmax(75px,1fr) 1.5fr auto;}.shop-panel{padding:13px;}}
+</style>
+</head>
+<body>
+
+<!-- ============ LOGIN SCREEN ============ -->
+<div class="login-screen" id="loginScreen">
+  <div class="login-card">
+    <div class="logo"><div class="logo-mark"></div><div class="logo-text">Chattery Echo</div></div>
+    <h2>Welcome back</h2>
+    <p class="sub">Sign in to your dashboard</p>
+    <div class="login-error" id="loginError"></div>
+    <form id="loginForm">
+      <div class="form-group" style="margin-bottom:12px;">
+        <label>Email</label>
+        <input type="email" id="loginEmail" required placeholder="you@company.com" autocomplete="username" />
+      </div>
+      <div class="form-group" style="margin-bottom:6px;">
+        <label>Password</label>
+        <input type="password" id="loginPassword" required placeholder="••••••••" autocomplete="current-password" />
+      </div>
+      <button type="submit" class="btn btn-primary" id="loginSubmit"><span id="loginSubmitLabel">Sign in</span></button>
+    </form>
+    <div class="demo-hint">Demo account — <b>admin@chatterecho.io</b> / <b>demo1234</b><br/>Client-side demo auth: fine for trying the app, not for real production use.</div>
+  </div>
+</div>
+
+<!-- ============ APP SCREEN ============ -->
+<div class="app" id="appScreen" style="display:none;">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="logo">
+      <div class="logo-mark"></div>
+      <div class="logo-text">Chattery Echo</div>
+    </div>
+
+    <div class="side-search">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input placeholder="Search" id="sidebarSearch" />
+    </div>
+
+    <div class="nav-group">
+      <div class="nav-item active" data-page="dashboard">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
+        Dashboard
+      </div>
+      <div class="nav-item" data-page="analytics">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><path d="M7 15l4-5 3 3 5-7"/></svg>
+        Analytics
+      </div>
+      <div class="nav-item" data-page="orders">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 7l-8-4-8 4 8 4 8-4z"/><path d="M4 7v10l8 4 8-4V7"/></svg>
+        My deals
+      </div>
+      <div class="nav-item" data-page="customers">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="8" r="3.2"/><path d="M2.5 20c0-3.5 3-5.5 6.5-5.5s6.5 2 6.5 5.5"/><circle cx="18" cy="8.5" r="2.3"/><path d="M16.5 14.3c2.6.3 4.5 1.9 4.5 5"/></svg>
+        Customers
+      </div>
+    </div>
+
+    <div class="nav-group">
+      <div class="nav-label">Tools</div>
+      <div class="nav-item" data-page="settings">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 11-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09a1.65 1.65 0 00-1.08-1.51 1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 11-2.83-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09a1.65 1.65 0 001.51-1.08 1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 112.83-2.83l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 112.83 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+        Settings
+      </div>
+      <div class="nav-item" data-page="help">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.5 2.5 0 015 .5c0 1.5-2.5 1.8-2.5 3.5"/><line x1="12" y1="17" x2="12" y2="17"/></svg>
+        Help
+      </div>
+    </div>
+
+    <div class="promo">
+      <div class="promo-circle"></div>
+      <div class="badge">ChatterEcho°</div>
+      <h4>Fast Payments for Sales</h4>
+      <button class="promo-btn" id="promoBtn">Join now</button>
+    </div>
+
+    <div class="logout" id="logoutBtn">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+      Logout
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="main">
+    <div class="topbar">
+      <h1 id="pageTitle">Dashboard</h1>
+      <div class="top-right">
+        <div class="top-search">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <input placeholder="Search type of keywords" id="topSearch" />
+        </div>
+        <div class="icon-btn" id="notifBtn">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8a6 6 0 10-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>
+          <span class="notif-dot" id="notifDot"></span>
+          <div class="dd-panel" id="notifPanel"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============ DASHBOARD PAGE ============ -->
+    <div class="page active" id="page-dashboard">
+      <div class="tabs" id="chartTabs">
+        <div class="tab active" data-tab="compare">Value comparsion</div>
+        <div class="tab" data-tab="average">Avarage values</div>
+        <div class="tab" data-tab="configure">Configure analysis</div>
+        <div class="tab" data-tab="filter">Filter analysis</div>
+      </div>
+
+      <div class="stats" id="statCards"></div>
+
+      <div class="content-grid">
+        <div class="left-col">
+          <div class="panel" style="flex:1;">
+            <div class="panel-head">
+              <div class="panel-title">Sales Dynamic</div>
+              <div class="legend">
+                <span><i class="dot orange"></i>Revenue</span>
+                <span><i class="dot purple"></i>Orders</span>
+              </div>
+              <div class="dropdown" id="periodDropdown">One Year ▾</div>
+            </div>
+            <div class="chart-wrap" id="mainChart"></div>
+            <div class="month-labels" id="mainChartLabels"></div>
+          </div>
+
+          <div class="table-panel">
+            <div class="table-head">
+              <div class="left">
+                <span style="font-size:14px;font-weight:700;">Orders list</span>
+                <span class="count" id="dashOrderCount">0 orders</span>
+              </div>
+              <div class="table-icons">
+                <span id="densityToggle" title="Toggle row density">▤</span>
+                <span id="statusFilterIcon" title="Filter by status">▽</span>
+                <span id="sortCostIcon" title="Sort by cost">📶</span>
+                <span id="sortDateIcon" title="Sort by due date">⏱</span>
+                <span id="exportIcon" title="Export CSV">⋯</span>
+              </div>
+            </div>
+            <div class="table-scroll"><table id="dashOrdersTable"><thead>
+              <tr><th>Order ID</th><th>Customer</th><th>Order</th><th>Cost</th><th>Due Date</th><th>Delivery Status</th><th>Payment</th></tr>
+            </thead><tbody></tbody></table></div>
+          </div>
+        </div>
+
+        <div class="right-col">
+          <div class="mini-panel">
+            <div class="mini-head">
+              <span class="mini-title">Monthly Profit</span>
+              <span class="mini-menu" id="profitMenuBtn">⋯
+                <div class="dd-panel" id="profitMenuPanel" style="width:170px;">
+                  <div class="dd-item" data-action="view-analytics">View full report</div>
+                </div>
+              </span>
+            </div>
+            <div class="mini-figure"><span class="val" id="profitValue">$0</span><span class="pill up" id="profitPill">0%</span></div>
+            <div class="bar-chart" id="profitBars"></div>
+          </div>
+
+          <div class="mini-panel" style="flex:1;">
+            <div class="mini-head">
+              <span class="mini-title">Monthly Sales</span>
+              <div class="dropdown" id="monthDropdown">September ▾</div>
+            </div>
+            <div class="sales-sub">Total this month</div>
+            <div class="sales-figure" id="monthlySalesFigure">$0</div>
+            <div class="chart-wrap" id="miniChart" style="margin-top:8px;"></div>
+            <div class="month-labels" id="miniChartLabels"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============ ANALYTICS PAGE ============ -->
+    <div class="page" id="page-analytics">
+      <div class="stats" id="analyticsStats"></div>
+      <div class="panel" style="flex:1;">
+        <div class="panel-head">
+          <div class="panel-title">Revenue vs Orders — full year</div>
+          <div class="legend"><span><i class="dot orange"></i>Revenue</span><span><i class="dot purple"></i>Orders</span></div>
+        </div>
+        <div class="chart-wrap" id="analyticsChart"></div>
+        <div class="month-labels" id="analyticsChartLabels"></div>
+      </div>
+    </div>
+
+    <!-- ============ ORDERS PAGE ============ -->
+    <div class="page" id="page-orders">
+      <div class="table-panel" style="flex:1;">
+        <div class="table-head">
+          <div class="left">
+            <span style="font-size:14px;font-weight:700;">All orders</span>
+            <span class="count" id="ordersPageCount">0 orders</span>
+          </div>
+          <button class="btn btn-primary" id="addOrderBtn">+ Add order</button>
+        </div>
+        <div class="table-scroll"><table id="ordersPageTable"><thead>
+          <tr><th>Order ID</th><th>Customer</th><th>Order</th><th>Cost</th><th>Due Date</th><th>Status</th><th>Payment</th><th></th></tr>
+        </thead><tbody></tbody></table></div>
+        <div class="empty-state" id="ordersEmpty" style="display:none;"><div class="big">🧾</div>No orders found.<br/>Try a different search, or add a new order.</div>
+      </div>
+    </div>
+
+    <!-- ============ CUSTOMERS PAGE ============ -->
+    <div class="page" id="page-customers">
+      <div class="toolbar">
+        <span class="count" id="customersCount">0 customers</span>
+        <button class="btn btn-primary" id="addCustomerBtn">+ Add customer</button>
+      </div>
+      <div class="card-grid" id="customerGrid"></div>
+      <div class="empty-state" id="customersEmpty" style="display:none;"><div class="big">🧑‍🤝‍🧑</div>No customers found.</div>
+    </div>
+
+    <!-- ============ SETTINGS PAGE ============ -->
+    <div class="page" id="page-settings">
+      <div class="settings-panel">
+        <div class="panel" style="padding:18px;">
+          <div class="panel-title" style="margin-bottom:14px;">Profile</div>
+          <form id="profileForm" style="display:flex;flex-direction:column;gap:12px;">
+            <div class="form-group"><label>Display name</label><input id="settingsName" required /></div>
+            <div class="form-group"><label>Email</label><input id="settingsEmail" type="email" required /></div>
+            <button class="btn btn-primary" type="submit" style="align-self:flex-start;">Save changes</button>
+          </form>
+        </div>
+        <div class="panel" style="padding:18px;">
+          <div class="panel-title" style="margin-bottom:14px;">Business figures</div>
+          <form id="expenseForm" style="display:flex;flex-direction:column;gap:12px;">
+            <div class="form-group"><label>Monthly expense total ($)</label><input id="settingsExpense" type="number" min="0" step="0.01" required /></div>
+            <button class="btn btn-primary" type="submit" style="align-self:flex-start;">Update</button>
+          </form>
+        </div>
+        <div class="panel" style="padding:18px;border-color:rgba(255,90,90,.3);">
+          <div class="panel-title" style="margin-bottom:10px;">Danger zone</div>
+          <p class="hint" style="margin:0 0 12px;">Sign out of Chattery Echo on this device.</p>
+          <button class="btn btn-danger" id="settingsLogout">Log out</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============ HELP PAGE ============ -->
+    <div class="page" id="page-help">
+      <div class="panel" style="padding:18px 20px;">
+        <div class="panel-title" style="margin-bottom:6px;">Need a hand?</div>
+        <p class="hint" style="margin:0 0 4px;">Email us and we'll get back to you within a day.</p>
+        <a href="mailto:support@chatterecho.io" style="color:var(--orange-1);font-size:13px;">support@chatterecho.io</a>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:10px;" id="faqList"></div>
+    </div>
+  </main>
+</div>
+
+<!-- ============ MODAL: ORDER ============ -->
+<div class="modal-overlay" id="orderModalOverlay">
+  <div class="modal">
+    <h3 id="orderModalTitle">Add order</h3>
+    <form id="orderForm">
+      <input type="hidden" id="orderEditId" />
+      <div class="form-group" style="margin-bottom:10px;"><label>Customer name</label><input id="orderCustomer" required /></div>
+      <div class="form-row" style="margin-bottom:10px;">
+        <div class="form-group"><label>Item</label><input id="orderItem" required /></div>
+        <div class="form-group"><label>Cost ($)</label><input id="orderCost" type="number" min="0" step="0.01" required /></div>
+      </div>
+      <div class="form-row" style="margin-bottom:10px;">
+        <div class="form-group"><label>Due date</label><input id="orderDue" type="date" required /></div>
+        <div class="form-group"><label>Payment</label>
+          <select id="orderPayment"><option>Credit Card</option><option>Debit Card</option><option>PayPal</option></select>
+        </div>
+      </div>
+      <div class="form-group" style="margin-bottom:4px;"><label>Status</label>
+        <select id="orderStatus"><option value="pending">Pending</option><option value="completed">Completed</option></select>
+      </div>
+      <div class="field-error" id="orderFormError"></div>
+      <div class="modal-actions">
+        <button type="button" class="btn btn-secondary" data-close-modal>Cancel</button>
+        <button type="submit" class="btn btn-primary" id="orderSubmitBtn"><span id="orderSubmitLabel">Save order</span></button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ============ MODAL: CUSTOMER ============ -->
+<div class="modal-overlay" id="customerModalOverlay">
+  <div class="modal">
+    <h3>Add customer</h3>
+    <form id="customerForm">
+      <div class="form-group" style="margin-bottom:10px;"><label>Full name</label><input id="customerName" required /></div>
+      <div class="form-group" style="margin-bottom:4px;"><label>Email</label><input id="customerEmail" type="email" required /></div>
+      <div class="field-error" id="customerFormError"></div>
+      <div class="modal-actions">
+        <button type="button" class="btn btn-secondary" data-close-modal>Cancel</button>
+        <button type="submit" class="btn btn-primary" id="customerSubmitBtn"><span id="customerSubmitLabel">Add customer</span></button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ============ MODAL: CONFIRM DELETE ============ -->
+<div class="modal-overlay" id="confirmModalOverlay">
+  <div class="modal" style="width:320px;">
+    <h3 id="confirmTitle">Are you sure?</h3>
+    <p class="hint" id="confirmBody" style="margin-bottom:0;"></p>
+    <div class="modal-actions">
+      <button type="button" class="btn btn-secondary" data-close-modal>Cancel</button>
+      <button type="button" class="btn btn-danger" id="confirmActionBtn">Delete</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast-wrap" id="toastWrap"></div>
+
+<script>
+/* =========================================================================
+   STORAGE LAYER — this app has no real server. All "backend" state lives in
+   the artifact's per-user persistent key/value storage (window.storage),
+   which survives reloads for the same user. Swap these functions for real
+   fetch() calls to an API and the rest of the app is unaffected.
+   ========================================================================= */
+async function kvGet(key){
+  try{ const r = await window.storage.get(key, false); return r ? JSON.parse(r.value) : null; }
+  catch(e){ return null; }
+}
+async function kvSet(key, value){
+  try{ await window.storage.set(key, JSON.stringify(value), false); return true; }
+  catch(e){ return false; }
+}
+
+const SEED_ORDERS = [
+  {id:'AXN12508',customer:'Olivera Kolman',item:'Hummel Sneakers',cost:24.90,due:'2024-09-03',status:'completed',payment:'Credit Card'},
+  {id:'TM130321',customer:'Kemal Selman',item:'Nike T-Shirt',cost:41.99,due:'2024-09-07',status:'pending',payment:'PayPal'},
+  {id:'BQ441092',customer:'Amara Chen',item:'Adidas Hoodie',cost:58.00,due:'2024-09-10',status:'completed',payment:'Credit Card'},
+  {id:'RX220087',customer:'Diego Fuentes',item:'Puma Cap',cost:15.50,due:'2024-09-12',status:'pending',payment:'Debit Card'},
+  {id:'ZK900341',customer:'Hana Kobayashi',item:'Reebok Shorts',cost:32.25,due:'2024-09-15',status:'completed',payment:'PayPal'},
+];
+const SEED_CUSTOMERS = [
+  {id:1,name:'Olivera Kolman',email:'olivera.k@example.com',joined:'2024-02-11'},
+  {id:2,name:'Kemal Selman',email:'kemal.selman@example.com',joined:'2024-03-02'},
+  {id:3,name:'Amara Chen',email:'amara.chen@example.com',joined:'2024-04-19'},
+  {id:4,name:'Diego Fuentes',email:'diego.fuentes@example.com',joined:'2024-05-27'},
+  {id:5,name:'Hana Kobayashi',email:'hana.k@example.com',joined:'2024-06-14'},
+];
+const SEED_USERS = [{id:1,name:'Demo Admin',email:'admin@chatterecho.io',password:'demo1234'}];
+const SEED_METRICS = {baseSale:136730.10,baseOrders:1492,baseCustomers:625,expenseTotal:12955,lastSale:115555,lastExpense:15117.52,lastOrders:1332,lastCustomers:510};
+const FAQS = [
+  {q:'How do I add a new order?', a:'Go to "My deals" in the sidebar and click "Add order". Fill in the customer, item, cost and due date, then save — it appears in the table immediately and updates your dashboard totals.'},
+  {q:'Where is my data stored?', a:'In this demo, your orders, customers and settings are stored in your private, per-account application storage — not shared with other users, and not a public database.'},
+  {q:'Can I export my orders?', a:'Yes — on the Dashboard, use the "⋯" icon above the orders table to download a CSV of the currently filtered and sorted list.'},
+  {q:'Is this a real production backend?', a:'No. This build focuses on a fully functional frontend experience. A real deployment would need an actual server, database and hashed-password authentication behind it.'}
+];
+
+let session = null;      // {id, name, email}
+let orders = [];
+let customers = [];
+let metrics = null;
+let ui = {
+  page:'dashboard',
+  searchQuery:'',
+  statusFilter:'all',   // all | completed | pending
+  sortBy:null,          // 'cost' | 'due'
+  sortDir:1,
+  density:'comfortable',
+  chartPeriod:'year',   // year | 6m | 3m
+  chartTab:'compare',
+  notifRead:false,
+};
+let notifications = [
+  {id:1,text:'Payment received from Kemal Selman', unread:true},
+  {id:2,text:'New customer signed up: Hana Kobayashi', unread:true},
+  {id:3,text:'Weekly report is ready to view', unread:false},
+];
+
+/* ---------------- INIT / SEED ---------------- */
+async function initData(){
+  let users = await kvGet('users');
+  if(!users){ users = SEED_USERS; await kvSet('users', users); }
+
+  orders = await kvGet('orders');
+  if(!orders){ orders = SEED_ORDERS; await kvSet('orders', orders); }
+
+  customers = await kvGet('customers');
+  if(!customers){ customers = SEED_CUSTOMERS; await kvSet('customers', customers); }
+
+  metrics = await kvGet('metrics');
+  if(!metrics){ metrics = SEED_METRICS; await kvSet('metrics', metrics); }
+
+  const savedSession = await kvGet('session');
+  if(savedSession){ session = savedSession; }
+}
+
+/* ---------------- TOASTS ---------------- */
+function toast(msg, type='default'){
+  const wrap = document.getElementById('toastWrap');
+  const el = document.createElement('div');
+  el.className = 'toast ' + (type==='success'?'success':type==='error'?'error':'');
+  el.textContent = msg;
+  wrap.appendChild(el);
+  setTimeout(()=>{ el.remove(); }, 3600);
+}
+
+/* ---------------- AUTH ---------------- */
+document.getElementById('loginForm').addEventListener('submit', async (e)=>{
+  e.preventDefault();
+  const email = document.getElementById('loginEmail').value.trim().toLowerCase();
+  const pw = document.getElementById('loginPassword').value;
+  const errBox = document.getElementById('loginError');
+  errBox.classList.remove('active');
+  const btn = document.getElementById('loginSubmit');
+  const label = document.getElementById('loginSubmitLabel');
+  btn.disabled = true;
+  label.innerHTML = '<span class="spinner"></span>';
+
+  await new Promise(r=>setTimeout(r, 500)); // simulate request latency
+  const users = await kvGet('users') || SEED_USERS;
+  const found = users.find(u => u.email.toLowerCase() === email && u.password === pw);
+
+  btn.disabled = false;
+  label.textContent = 'Sign in';
+
+  if(!found){
+    errBox.textContent = 'Invalid email or password.';
+    errBox.classList.add('active');
+    return;
+  }
+  session = {id:found.id, name:found.name, email:found.email};
+  await kvSet('session', session);
+  enterApp();
+});
+
+async function enterApp(){
+  document.getElementById('loginScreen').style.display = 'none';
+  document.getElementById('appScreen').style.display = 'flex';
+  document.getElementById('settingsName').value = session.name;
+  document.getElementById('settingsEmail').value = session.email;
+  renderAll();
+}
+
+async function doLogout(){
+  session = null;
+  await kvSet('session', null);
+  document.getElementById('appScreen').style.display = 'none';
+  document.getElementById('loginScreen').style.display = 'flex';
+  document.getElementById('loginEmail').value = '';
+  document.getElementById('loginPassword').value = '';
+  toast('You have been logged out.');
+}
+document.getElementById('logoutBtn').addEventListener('click', doLogout);
+document.getElementById('settingsLogout').addEventListener('click', doLogout);
+
+/* ---------------- NAVIGATION ---------------- */
+document.querySelectorAll('.nav-item[data-page]').forEach(item=>{
+  item.addEventListener('click', ()=>{
+    document.querySelectorAll('.nav-item[data-page]').forEach(n=>n.classList.remove('active'));
+    item.classList.add('active');
+    ui.page = item.dataset.page;
+    document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+    document.getElementById('page-'+ui.page).classList.add('active');
+    const titles = {dashboard:'Dashboard',analytics:'Analytics',orders:'My deals',customers:'Customers',settings:'Settings',help:'Help'};
+    document.getElementById('pageTitle').textContent = titles[ui.page];
+    renderAll();
+  });
+});
+
+/* ---------------- SEARCH ---------------- */
+function bindSearch(input){
+  input.addEventListener('input', ()=>{
+    ui.searchQuery = input.value.trim().toLowerCase();
+    document.getElementById('sidebarSearch').value = input.value;
+    document.getElementById('topSearch').value = input.value;
+    renderAll();
+  });
+}
+bindSearch(document.getElementById('topSearch'));
+bindSearch(document.getElementById('sidebarSearch'));
+
+function filterOrders(list){
+  let out = list;
+  if(ui.searchQuery){
+    out = out.filter(o => (o.id+o.customer+o.item).toLowerCase().includes(ui.searchQuery));
+  }
+  if(ui.statusFilter !== 'all'){
+    out = out.filter(o => o.status === ui.statusFilter);
+  }
+  if(ui.sortBy === 'cost'){
+    out = [...out].sort((a,b)=>(a.cost-b.cost)*ui.sortDir);
+  } else if(ui.sortBy === 'due'){
+    out = [...out].sort((a,b)=>(new Date(a.due)-new Date(b.due))*ui.sortDir);
+  }
+  return out;
+}
+function filterCustomers(list){
+  if(!ui.searchQuery) return list;
+  return list.filter(c => (c.name+c.email).toLowerCase().includes(ui.searchQuery));
+}
+
+/* ---------------- TABLE ICONS ---------------- */
+document.getElementById('densityToggle').addEventListener('click', ()=>{
+  ui.density = ui.density === 'comfortable' ? 'compact' : 'comfortable';
+  document.getElementById('densityToggle').classList.toggle('on', ui.density==='compact');
+  renderDashboard();
+});
+document.getElementById('statusFilterIcon').addEventListener('click', ()=>{
+  ui.statusFilter = ui.statusFilter==='all' ? 'completed' : ui.statusFilter==='completed' ? 'pending' : 'all';
+  const icon = document.getElementById('statusFilterIcon');
+  icon.classList.toggle('on', ui.statusFilter!=='all');
+  icon.title = 'Filter by status: ' + ui.statusFilter;
+  toast('Showing: ' + (ui.statusFilter==='all'?'all orders':ui.statusFilter+' orders'));
+  renderAll();
+});
+document.getElementById('sortCostIcon').addEventListener('click', ()=>{
+  ui.sortBy = 'cost'; ui.sortDir = ui.sortBy==='cost' && ui.sortDir===1 ? -1 : 1;
+  document.getElementById('sortCostIcon').classList.add('on');
+  document.getElementById('sortDateIcon').classList.remove('on');
+  renderAll();
+});
+document.getElementById('sortDateIcon').addEventListener('click', ()=>{
+  ui.sortBy = 'due'; ui.sortDir = ui.sortBy==='due' && ui.sortDir===1 ? -1 : 1;
+  document.getElementById('sortDateIcon').classList.add('on');
+  document.getElementById('sortCostIcon').classList.remove('on');
+  renderAll();
+});
+document.getElementById('exportIcon').addEventListener('click', ()=>{
+  const rows = filterOrders(orders);
+  if(!rows.length){ toast('Nothing to export.', 'error'); return; }
+  const header = 'Order ID,Customer,Item,Cost,Due Date,Status,Payment\n';
+  const body = rows.map(o=>[o.id,o.customer,o.item,o.cost,o.due,o.status,o.payment].join(',')).join('\n');
+  const blob = new Blob([header+body], {type:'text/csv'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'orders.csv'; a.click();
+  URL.revokeObjectURL(url);
+  toast('Exported ' + rows.length + ' orders to CSV.', 'success');
+});
+
+/* ---------------- CHART TABS / DROPDOWNS ---------------- */
+document.getElementById('chartTabs').addEventListener('click', (e)=>{
+  const tab = e.target.closest('.tab');
+  if(!tab) return;
+  document.querySelectorAll('#chartTabs .tab').forEach(t=>t.classList.remove('active'));
+  tab.classList.add('active');
+  ui.chartTab = tab.dataset.tab;
+  renderMainChart();
+});
+const PERIODS = {year:{label:'One Year ▾', months:['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov'], rev:[14,17,15,19,22,18,24,27,10,25,20], ord:[10,13,12,15,17,14,19,21,30,20,16], hl:8},
+  '6m':{label:'6 Months ▾', months:['Apr','May','Jun','Jul','Aug','Sep'], rev:[19,22,18,24,27,10], ord:[15,17,14,19,21,30], hl:5},
+  '3m':{label:'3 Months ▾', months:['Jul','Aug','Sep'], rev:[24,27,10], ord:[19,21,30], hl:2}};
+document.getElementById('periodDropdown').addEventListener('click', ()=>{
+  ui.chartPeriod = ui.chartPeriod==='year' ? '6m' : ui.chartPeriod==='6m' ? '3m' : 'year';
+  document.getElementById('periodDropdown').textContent = PERIODS[ui.chartPeriod].label;
+  renderMainChart();
+});
+const MONTHS_DROPDOWN = ['September ▾','August ▾','July ▾','June ▾'];
+let monthIdx = 0;
+document.getElementById('monthDropdown').addEventListener('click', ()=>{
+  monthIdx = (monthIdx+1) % MONTHS_DROPDOWN.length;
+  document.getElementById('monthDropdown').textContent = MONTHS_DROPDOWN[monthIdx];
+});
+
+/* ---------------- NOTIFICATIONS / MENUS ---------------- */
+function toggleDD(panelId, others=[]){
+  const panel = document.getElementById(panelId);
+  const willOpen = !panel.classList.contains('active');
+  [panelId, ...others].forEach(id=>document.getElementById(id).classList.remove('active'));
+  if(willOpen) panel.classList.add('active');
+}
+document.getElementById('notifBtn').addEventListener('click', (e)=>{
+  e.stopPropagation();
+  toggleDD('notifPanel', ['profitMenuPanel']);
+  renderNotifications();
+});
+document.getElementById('profitMenuBtn').addEventListener('click', (e)=>{
+  e.stopPropagation();
+  toggleDD('profitMenuPanel', ['notifPanel']);
+});
+document.getElementById('profitMenuPanel').addEventListener('click', (e)=>{
+  if(e.target.dataset.action === 'view-analytics'){
+    document.querySelector('.nav-item[data-page="analytics"]').click();
+  }
+});
+document.addEventListener('click', ()=>{
+  const notifPanel = document.getElementById('notifPanel');
+  const profitMenuPanel = document.getElementById('profitMenuPanel');
+  if(notifPanel) notifPanel.classList.remove('active');
+  if(profitMenuPanel) profitMenuPanel.classList.remove('active');
+});
+function renderNotifications(){
+  const panel = document.getElementById('notifPanel');
+  if(!notifications.length){ panel.innerHTML = '<div class="dd-empty">No notifications.</div>'; return; }
+  panel.innerHTML = notifications.map(n=>`<div class="dd-item ${n.unread?'unread':''}" data-id="${n.id}">${n.text}</div>`).join('');
+  panel.querySelectorAll('.dd-item').forEach(el=>{
+    el.addEventListener('click', ()=>{
+      const n = notifications.find(x=>x.id==el.dataset.id);
+      n.unread = false;
+      updateNotifDot();
+      renderNotifications();
+    });
+  });
+}
+function updateNotifDot(){
+  document.getElementById('notifDot').style.display = notifications.some(n=>n.unread) ? 'block' : 'none';
+}
+
+document.getElementById('promoBtn').addEventListener('click', ()=>{
+  toast("Premium plans aren't available in this demo yet.");
+});
+
+/* ---------------- MODALS ---------------- */
+function openModal(id){ document.getElementById(id).classList.add('active'); }
+function closeModal(id){ document.getElementById(id).classList.remove('active'); }
+document.querySelectorAll('[data-close-modal]').forEach(btn=>{
+  btn.addEventListener('click', ()=> btn.closest('.modal-overlay').classList.remove('active'));
+});
+document.querySelectorAll('.modal-overlay').forEach(ov=>{
+  ov.addEventListener('click', (e)=>{ if(e.target === ov) ov.classList.remove('active'); });
+});
+
+/* ---- Order modal ---- */
+document.getElementById('addOrderBtn').addEventListener('click', ()=> openOrderModal());
+function openOrderModal(order=null){
+  document.getElementById('orderFormError').textContent = '';
+  document.getElementById('orderModalTitle').textContent = order ? 'Edit order' : 'Add order';
+  document.getElementById('orderEditId').value = order ? order.id : '';
+  document.getElementById('orderCustomer').value = order ? order.customer : '';
+  document.getElementById('orderItem').value = order ? order.item : '';
+  document.getElementById('orderCost').value = order ? order.cost : '';
+  document.getElementById('orderDue').value = order ? order.due : '';
+  document.getElementById('orderPayment').value = order ? order.payment : 'Credit Card';
+  document.getElementById('orderStatus').value = order ? order.status : 'pending';
+  document.getElementById('orderSubmitLabel').textContent = order ? 'Save changes' : 'Save order';
+  openModal('orderModalOverlay');
+}
+document.getElementById('orderForm').addEventListener('submit', async (e)=>{
+  e.preventDefault();
+  const editId = document.getElementById('orderEditId').value;
+  const cost = parseFloat(document.getElementById('orderCost').value);
+  if(isNaN(cost) || cost < 0){
+    document.getElementById('orderFormError').textContent = 'Enter a valid cost.'; return;
+  }
+  const data = {
+    customer: document.getElementById('orderCustomer').value.trim(),
+    item: document.getElementById('orderItem').value.trim(),
+    cost: cost,
+    due: document.getElementById('orderDue').value,
+    payment: document.getElementById('orderPayment').value,
+    status: document.getElementById('orderStatus').value,
+  };
+  const btn = document.getElementById('orderSubmitBtn');
+  btn.disabled = true;
+  document.getElementById('orderSubmitLabel').innerHTML = '<span class="spinner"></span>';
+  await new Promise(r=>setTimeout(r,350));
+
+  if(editId){
+    const idx = orders.findIndex(o=>o.id===editId);
+    if(idx>-1){
+      const oldCost = orders[idx].cost;
+      orders[idx] = {...orders[idx], ...data};
+      metrics.baseSale += (data.cost - oldCost);
+    }
+    toast('Order updated.', 'success');
+  } else {
+    const newId = 'ORD' + Math.floor(100000+Math.random()*899999);
+    orders.push({id:newId, ...data});
+    metrics.baseOrders += 1;
+    metrics.baseSale += data.cost;
+    toast('Order added.', 'success');
+  }
+  await kvSet('orders', orders);
+  await kvSet('metrics', metrics);
+  btn.disabled = false;
+  closeModal('orderModalOverlay');
+  renderAll();
+});
+
+function askDelete(title, body, onConfirm){
+  document.getElementById('confirmTitle').textContent = title;
+  document.getElementById('confirmBody').textContent = body;
+  const btn = document.getElementById('confirmActionBtn');
+  const clone = btn.cloneNode(true);
+  btn.parentNode.replaceChild(clone, btn);
+  clone.addEventListener('click', async ()=>{ await onConfirm(); closeModal('confirmModalOverlay'); });
+  openModal('confirmModalOverlay');
+}
+
+function editOrder(id){ openOrderModal(orders.find(o=>o.id===id)); }
+async function deleteOrder(id){
+  askDelete('Delete this order?', 'This will permanently remove order ' + id + '.', async ()=>{
+    const idx = orders.findIndex(o=>o.id===id);
+    if(idx>-1){
+      metrics.baseSale -= orders[idx].cost;
+      metrics.baseOrders -= 1;
+      orders.splice(idx,1);
+      await kvSet('orders', orders);
+      await kvSet('metrics', metrics);
+      toast('Order deleted.', 'success');
+      renderAll();
+    }
+  });
+}
+
+/* ---- Customer modal ---- */
+document.getElementById('addCustomerBtn').addEventListener('click', ()=>{
+  document.getElementById('customerFormError').textContent = '';
+  document.getElementById('customerName').value = '';
+  document.getElementById('customerEmail').value = '';
+  openModal('customerModalOverlay');
+});
+document.getElementById('customerForm').addEventListener('submit', async (e)=>{
+  e.preventDefault();
+  const name = document.getElementById('customerName').value.trim();
+  const email = document.getElementById('customerEmail').value.trim();
+  if(customers.some(c=>c.email.toLowerCase()===email.toLowerCase())){
+    document.getElementById('customerFormError').textContent = 'A customer with this email already exists.';
+    return;
+  }
+  const btn = document.getElementById('customerSubmitBtn');
+  btn.disabled = true;
+  document.getElementById('customerSubmitLabel').innerHTML = '<span class="spinner"></span>';
+  await new Promise(r=>setTimeout(r,350));
+  customers.push({id:Date.now(), name, email, joined:new Date().toISOString().slice(0,10)});
+  metrics.baseCustomers += 1;
+  await kvSet('customers', customers);
+  await kvSet('metrics', metrics);
+  btn.disabled = false;
+  closeModal('customerModalOverlay');
+  toast('Customer added.', 'success');
+  renderAll();
+});
+async function deleteCustomer(id){
+  const c = customers.find(x=>x.id===id);
+  askDelete('Remove this customer?', 'This will remove ' + c.name + ' from your customer list.', async ()=>{
+    customers = customers.filter(x=>x.id!==id);
+    metrics.baseCustomers -= 1;
+    await kvSet('customers', customers);
+    await kvSet('metrics', metrics);
+    toast('Customer removed.', 'success');
+    renderAll();
+  });
+}
+
+/* ---------------- SETTINGS ---------------- */
+document.getElementById('profileForm').addEventListener('submit', async (e)=>{
+  e.preventDefault();
+  session.name = document.getElementById('settingsName').value.trim();
+  session.email = document.getElementById('settingsEmail').value.trim();
+  await kvSet('session', session);
+  const users = await kvGet('users') || SEED_USERS;
+  const idx = users.findIndex(u=>u.id===session.id);
+  if(idx>-1){ users[idx].name = session.name; users[idx].email = session.email; await kvSet('users', users); }
+  toast('Profile updated.', 'success');
+});
+document.getElementById('expenseForm').addEventListener('submit', async (e)=>{
+  e.preventDefault();
+  const val = parseFloat(document.getElementById('settingsExpense').value);
+  if(isNaN(val) || val<0){ toast('Enter a valid amount.', 'error'); return; }
+  metrics.expenseTotal = val;
+  await kvSet('metrics', metrics);
+  toast('Expense total updated.', 'success');
+  renderAll();
+});
+
+/* ---------------- FAQ ---------------- */
+function renderFaq(){
+  const list = document.getElementById('faqList');
+  list.innerHTML = FAQS.map((f,i)=>`
+    <div class="faq-item" data-i="${i}">
+      <div class="faq-q">${f.q}<span>+</span></div>
+      <div class="faq-a">${f.a}</div>
+    </div>`).join('');
+  list.querySelectorAll('.faq-item').forEach(el=>{
+    el.addEventListener('click', ()=> el.classList.toggle('open'));
+  });
+}
+
+/* ---------------- RENDERERS ---------------- */
+function money(n){ return '$' + Number(n).toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2}); }
+function pct(current, base){ if(!base) return '0%'; return (((current-base)/base)*100).toFixed(1) + '%'; }
+
+function computedTotals(){
+  const totalSale = metrics.baseSale;
+  const totalOrders = metrics.baseOrders;
+  const totalCustomers = metrics.baseCustomers;
+  const expense = metrics.expenseTotal;
+  return {totalSale, totalOrders, totalCustomers, expense};
+}
+
+function renderStatCards(targetId){
+  const t = computedTotals();
+  const salePct = pct(t.totalSale, metrics.lastSale);
+  const expPct = pct(t.expense, metrics.lastExpense);
+  const ordPct = pct(t.totalOrders, metrics.lastOrders);
+  const custPct = pct(t.totalCustomers, metrics.lastCustomers);
+  document.getElementById(targetId).innerHTML = `
+    <div class="stat-card">
+      <div class="stat-top"><div class="stat-icon">💳</div><span class="pill ${t.totalSale>=metrics.lastSale?'up':'down'}">${salePct}</span></div>
+      <div class="stat-label">Total sale</div>
+      <div class="stat-value">${money(t.totalSale)}</div>
+      <div class="stat-sub">vs last month ${money(metrics.lastSale)}</div>
+    </div>
+    <div class="stat-card expense">
+      <div class="stat-top"><div class="stat-icon">📤</div><span class="pill">${expPct}</span></div>
+      <div class="stat-label">Expense total</div>
+      <div class="stat-value">${money(t.expense)}</div>
+      <div class="stat-sub">vs last month ${money(metrics.lastExpense)}</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-top"><div class="stat-icon">🧾</div><span class="pill ${t.totalOrders>=metrics.lastOrders?'up':'down'}">${ordPct}</span></div>
+      <div class="stat-label">New orders</div>
+      <div class="stat-value">${t.totalOrders.toLocaleString()}</div>
+      <div class="stat-sub">vs last month ${metrics.lastOrders.toLocaleString()}</div>
+    </div>
+    <div class="stat-card customers">
+      <div class="stat-top"><div class="stat-icon">🧑‍🤝‍🧑</div><span class="pill">${custPct}</span></div>
+      <div class="stat-label">New customers</div>
+      <div class="stat-value">${t.totalCustomers.toLocaleString()}</div>
+      <div class="stat-sub">vs last month ${metrics.lastCustomers.toLocaleString()}</div>
+    </div>`;
+}
+
+function statusBadge(status){
+  return status==='completed'
+    ? '<span class="status completed"><i class="d"></i>Completed</span>'
+    : '<span class="status pending"><i class="d"></i>Pending</span>';
+}
+
+function renderDashboard(){
+  renderStatCards('statCards');
+  const table = document.getElementById('dashOrdersTable');
+  table.classList.toggle('compact', ui.density==='compact');
+  const rows = filterOrders(orders).slice(0,6);
+  document.getElementById('dashOrderCount').textContent = filterOrders(orders).length + ' orders';
+  const tbody = table.querySelector('tbody');
+  if(!rows.length){
+    tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;color:var(--text-dimmer);padding:24px;">No orders match your filters.</td></tr>`;
+  } else {
+    tbody.innerHTML = rows.map(o=>`
+      <tr><td>${o.id}</td><td>${o.customer}</td><td>${o.item}</td><td>${money(o.cost)}</td>
+      <td>${o.due}</td><td>${statusBadge(o.status)}</td><td>${o.payment}</td></tr>`).join('');
+  }
+  renderMainChart();
+  renderMiniPanels();
+}
+
+function renderMainChart(){
+  const p = PERIODS[ui.chartPeriod];
+  let rev = p.rev, ord = p.ord;
+  if(ui.chartTab === 'average'){
+    const avg = arr => arr.reduce((a,b)=>a+b,0)/arr.length;
+    rev = rev.map(()=>avg(p.rev)); ord = ord.map(()=>avg(p.ord));
+  } else if(ui.chartTab === 'filter'){
+    ord = ord.map(v=>v*0); // isolate revenue only
+  }
+  drawAreaChart('mainChart', rev, ord, 640, 210, p.hl);
+  document.getElementById('mainChartLabels').innerHTML = p.months.map((m,i)=>`<span class="${i===p.hl?'hl':''}">${m}</span>`).join('');
+}
+
+function renderMiniPanels(){
+  const totalSale = metrics.baseSale;
+  const profit = totalSale - metrics.expenseTotal;
+  document.getElementById('profitValue').textContent = money(profit);
+  const profitPctVal = pct(profit, metrics.lastSale - metrics.lastExpense);
+  const pillEl = document.getElementById('profitPill');
+  pillEl.textContent = profitPctVal;
+  pillEl.className = 'pill ' + (parseFloat(profitPctVal)>=0?'up':'down');
+
+  const bars = [{m:'Jul',v:4108},{m:'Aug',v:5413},{m:'Sep',v: Math.round(profit)},{m:'Oct',v:12900}];
+  const maxV = Math.max(...bars.map(b=>b.v), 1);
+  document.getElementById('profitBars').innerHTML = bars.map((b,i)=>`
+    <div class="bar-col"><span class="amt">${b.v.toLocaleString()}</span>
+    <div class="bar ${i===2?'hi':''}" style="height:${Math.max(10,(b.v/maxV)*60)}px;"></div>
+    <span class="mo">${b.m}</span></div>`).join('');
+
+  const monthOrders = filterOrders(orders);
+  const monthTotal = monthOrders.reduce((s,o)=>s+o.cost,0) + 21845; // baseline for realism
+  document.getElementById('monthlySalesFigure').innerHTML = money(monthTotal) + ' <span class="pill up" style="margin-left:6px;">2.9%</span>';
+  drawSparkline('miniChart', [30,45,35,55,70,50], [40,30,50,40,60,65], 300, 90);
+  document.getElementById('miniChartLabels').innerHTML = ['May','Jun','Jul','Aug','Sep','Oct'].map(m=>`<span class="${m==='Sep'?'hl':''}">${m}</span>`).join('');
+}
+
+function renderAnalytics(){
+  renderStatCards('analyticsStats');
+  const p = PERIODS.year;
+  drawAreaChart('analyticsChart', p.rev, p.ord, 900, 240, p.hl);
+  document.getElementById('analyticsChartLabels').innerHTML = p.months.map((m,i)=>`<span class="${i===p.hl?'hl':''}">${m}</span>`).join('');
+}
+
+function renderOrdersPage(){
+  const rows = filterOrders(orders);
+  document.getElementById('ordersPageCount').textContent = rows.length + ' orders';
+  const tbody = document.getElementById('ordersPageTable').querySelector('tbody');
+  document.getElementById('ordersEmpty').style.display = rows.length ? 'none' : 'block';
+  tbody.innerHTML = rows.map(o=>`
+    <tr><td>${o.id}</td><td>${o.customer}</td><td>${o.item}</td><td>${money(o.cost)}</td>
+    <td>${o.due}</td><td>${statusBadge(o.status)}</td><td>${o.payment}</td>
+    <td><div class="row-actions">
+      <button onclick="editOrder('${o.id}')" title="Edit">✎</button>
+      <button onclick="deleteOrder('${o.id}')" title="Delete">🗑</button>
+    </div></td></tr>`).join('');
+}
+
+function renderCustomersPage(){
+  const rows = filterCustomers(customers);
+  document.getElementById('customersCount').textContent = rows.length + ' customers';
+  document.getElementById('customersEmpty').style.display = rows.length ? 'none' : 'block';
+  document.getElementById('customerGrid').innerHTML = rows.map(c=>`
+    <div class="cust-card">
+      <div class="cust-avatar">${c.name.split(' ').map(n=>n[0]).slice(0,2).join('')}</div>
+      <div class="cust-name">${c.name}</div>
+      <div class="cust-email">${c.email}</div>
+      <div class="cust-joined">Joined ${c.joined}</div>
+      <div class="cust-foot"><button class="row-actions" style="border:none;background:none;color:var(--text-dimmer);cursor:pointer;" onclick="deleteCustomer(${c.id})" title="Remove">🗑 Remove</button></div>
+    </div>`).join('');
+}
+
+/* ---- SVG chart drawing (kept visually identical to the original design) ---- */
+function pathFor(arr, max, w, h){
+  const stepX = w/(arr.length-1);
+  const pts = arr.map((v,i)=>[i*stepX, h - (v/max)*h*0.92 - 6]);
+  let d = `M ${pts[0][0]},${pts[0][1]}`;
+  for(let i=1;i<pts.length;i++){
+    const [x0,y0]=pts[i-1], [x1,y1]=pts[i];
+    const mx=(x0+x1)/2;
+    d += ` C ${mx},${y0} ${mx},${y1} ${x1},${y1}`;
+  }
+  return d;
+}
+function drawAreaChart(elId, revenue, orders, w, h, hlIndex){
+  const max = Math.max(...revenue, ...orders, 1) * 1.15;
+  const stepX = w/(revenue.length-1);
+  const revPath = pathFor(revenue, max, w, h);
+  const ordPath = pathFor(orders, max, w, h);
+  const barW = stepX*0.42;
+  let bars = '';
+  orders.forEach((v,i)=>{
+    const x = i*stepX - barW/2;
+    const bh = (v/max)*h*0.85;
+    const y = h - bh - 6;
+    bars += `<rect x="${x}" y="${y}" width="${barW}" height="${bh}" rx="3" fill="${i===hlIndex ? 'url(#gradOrangeBar)' : 'rgba(139,107,255,0.18)'}"></rect>`;
+  });
+  document.getElementById(elId).innerHTML = `
+  <svg viewBox="0 0 ${w} ${h}" preserveAspectRatio="none">
+    <defs>
+      <linearGradient id="gradOrangeBar" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#ff6a3d"/><stop offset="100%" stop-color="#ff2d55"/></linearGradient>
+      <linearGradient id="gradRevFill" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#ff6a3d" stop-opacity="0.35"/><stop offset="100%" stop-color="#ff6a3d" stop-opacity="0"/></linearGradient>
+    </defs>
+    ${bars}
+    <path d="${revPath} L ${w},${h} L 0,${h} Z" fill="url(#gradRevFill)"></path>
+    <path d="${revPath}" fill="none" stroke="#ff6a3d" stroke-width="2.2"></path>
+    <path d="${ordPath}" fill="none" stroke="#8b6bff" stroke-width="2" opacity="0.85"></path>
+  </svg>`;
+}
+function drawSparkline(elId, a, b, w, h){
+  const max = Math.max(...a, ...b) * 1.15;
+  const stepX = w/(a.length-1);
+  function pf(arr){
+    const pts = arr.map((v,i)=>[i*stepX, h-(v/max)*h*0.85-4]);
+    let d = `M ${pts[0][0]},${pts[0][1]}`;
+    for(let i=1;i<pts.length;i++){ const [x0,y0]=pts[i-1],[x1,y1]=pts[i]; const mx=(x0+x1)/2; d += ` C ${mx},${y0} ${mx},${y1} ${x1},${y1}`; }
+    return d;
+  }
+  document.getElementById(elId).innerHTML = `
+  <svg viewBox="0 0 ${w} ${h}" preserveAspectRatio="none">
+    <path d="${pf(a)}" fill="none" stroke="#ff6a3d" stroke-width="2"></path>
+    <path d="${pf(b)}" fill="none" stroke="#8b6bff" stroke-width="2"></path>
+    <line x1="${4*stepX}" y1="0" x2="${4*stepX}" y2="${h}" stroke="#ff6a3d" stroke-width="1" stroke-dasharray="2 3" opacity="0.5"/>
+    <circle cx="${4*stepX}" cy="${h-(a[4]/max)*h*0.85-4}" r="3.5" fill="#ff6a3d"/>
+  </svg>`;
+}
+
+function renderAll(){
+  updateNotifDot();
+  if(ui.page==='dashboard') renderDashboard();
+  else if(ui.page==='analytics') renderAnalytics();
+  else if(ui.page==='orders') renderOrdersPage();
+  else if(ui.page==='customers') renderCustomersPage();
+  else if(ui.page==='settings'){ document.getElementById('settingsExpense').value = metrics.expenseTotal; }
+  else if(ui.page==='help') renderFaq();
+}
+
+/* ---------------- BOOT ---------------- */
+(async function boot(){
+  await initData();
+  if(session){ await enterApp(); }
+  else{
+    document.getElementById('loginScreen').style.display = 'flex';
+    document.getElementById('appScreen').style.display = 'none';
+  }
+})();
+</script>
+<script>
+/* =========================================================================
+   MOTORCYCLE PARTS SHOP APPLICATION
+   This demo layer reuses the existing shell and visual system while keeping
+   inventory, sales, customers, suppliers, purchases, and reports connected.
+   ========================================================================= */
+const SHOP_USERS = [
+  {id:1,name:'Rafael Santos',email:'owner@motohaus.demo',password:'demo1234',role:'Owner'},
+  {id:2,name:'Mika Reyes',email:'cashier@motohaus.demo',password:'demo1234',role:'Cashier'},
+  {id:3,name:'Noel Garcia',email:'inventory@motohaus.demo',password:'demo1234',role:'Inventory Staff'},
+];
+const SHOP_SEED = {
+  products:[
+    {id:'P-1001',sku:'BP-HC125-01',name:'Ceramic Brake Pad Set',category:'Brake System',brand:'MotoHaus',compatibility:'Honda Click 125 (2023-2025)',supplier:'RiderPro Supply',price:680,cost:390,stock:3,min:5,location:'A-02',description:'Front ceramic pad set for daily city riding.'},
+    {id:'P-1002',sku:'CS-YNMAX-02',name:'428 Chain & Sprocket Kit',category:'Chain & Sprocket',brand:'RK',compatibility:'Yamaha NMAX 155 (2020-2024)',supplier:'GearWorks PH',price:2450,cost:1650,stock:18,min:6,location:'B-01',description:'Heavy-duty chain and matched sprocket set.'},
+    {id:'P-1003',sku:'OF-HPCX160-03',name:'Synthetic Engine Oil 10W-40',category:'Oils & Fluids',brand:'Motul',compatibility:'Honda PCX 160 (2021-2025)',supplier:'RiderPro Supply',price:520,cost:330,stock:24,min:8,location:'C-04',description:'1L synthetic scooter oil for regular service.'},
+    {id:'P-1004',sku:'LL-YAEROX-04',name:'LED Headlight Bulb',category:'Lighting',brand:'Osram',compatibility:'Yamaha Aerox 155 (2020-2025)',supplier:'VoltEdge Motors',price:890,cost:540,stock:7,min:4,location:'D-03',description:'Bright plug-and-play LED replacement bulb.'},
+    {id:'P-1005',sku:'TI-SRAIDER-05',name:'Tubeless Tire 90/80-17',category:'Tires & Wheels',brand:'Pirelli',compatibility:'Suzuki Raider 150 (2019-2025)',supplier:'GearWorks PH',price:3150,cost:2280,stock:0,min:3,location:'E-01',description:'Street tire with wet-weather tread.'},
+    {id:'P-1006',sku:'SP-KBARAKO-06',name:'Heavy-Duty Clutch Spring Set',category:'Performance Parts',brand:'Kawasaki',compatibility:'Kawasaki Barako II (2018-2024)',supplier:'GearWorks PH',price:760,cost:470,stock:11,min:4,location:'B-06',description:'Replacement clutch springs for utility bikes.'},
+  ],
+  customers:[
+    {id:'C-001',name:'Marco Villanueva',phone:'0917 555 0142',email:'marco.demo@example.com',motorcycle:'Honda Click 125',purchases:4280,last:'2026-09-04'},
+    {id:'C-002',name:'Janelle Cruz',phone:'0920 555 0198',email:'janelle.demo@example.com',motorcycle:'Yamaha NMAX 155',purchases:7950,last:'2026-09-02'},
+    {id:'C-003',name:'Paolo Mendoza',phone:'0918 555 0126',email:'paolo.demo@example.com',motorcycle:'Suzuki Raider 150',purchases:3150,last:'2026-08-29'},
+  ],
+  suppliers:[
+    {id:'S-001',company:'RiderPro Supply',contact:'Aileen Tan',phone:'(02) 8555 0140',email:'orders@riderpro.demo',status:'Active',products:2,purchases:18400},
+    {id:'S-002',company:'GearWorks PH',contact:'Luis Navarro',phone:'(02) 8555 0191',email:'sales@gearworks.demo',status:'Active',products:3,purchases:32900},
+    {id:'S-003',company:'VoltEdge Motors',contact:'Nica Ramos',phone:'(02) 8555 0177',email:'hello@voltedge.demo',status:'Active',products:1,purchases:8900},
+  ],
+  sales:[
+    {id:'TXN-260904-018',customer:'Marco Villanueva',items:[{productId:'P-1001',qty:1}],total:680,payment:'GCash',staff:'Mika Reyes',date:'2026-09-04'},
+    {id:'TXN-260904-017',customer:'Janelle Cruz',items:[{productId:'P-1003',qty:2}],total:1040,payment:'Cash',staff:'Mika Reyes',date:'2026-09-04'},
+    {id:'TXN-260903-016',customer:'Walk-in customer',items:[{productId:'P-1004',qty:1}],total:890,payment:'Card',staff:'Rafael Santos',date:'2026-09-03'},
+  ],
+  purchases:[
+    {id:'PO-260901-004',supplier:'RiderPro Supply',total:18400,status:'Received',date:'2026-09-01',items:12},
+    {id:'PO-260829-003',supplier:'GearWorks PH',total:32900,status:'Ordered',date:'2026-08-29',items:24},
+  ],
+  audit:[
+    {action:'Sale completed',detail:'TXN-260904-018',user:'Mika Reyes',date:'2026-09-04 16:42'},
+    {action:'Stock adjusted',detail:'Ceramic Brake Pad Set',user:'Noel Garcia',date:'2026-09-04 14:18'},
+    {action:'Purchase received',detail:'PO-260901-004',user:'Rafael Santos',date:'2026-09-01 10:05'},
+  ]
+};
+let shopState = JSON.parse(JSON.stringify(SHOP_SEED));
+let shopUser = null;
+let shopPage = 'dashboard';
+let shopCart = [];
+let shopQuery = '';
+const peso = n => '₱' + Number(n||0).toLocaleString('en-PH',{minimumFractionDigits:2,maximumFractionDigits:2});
+const shopEscape = value => String(value ?? '').replace(/[&<>'"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
+const shopIcon = text => `<span aria-hidden="true" style="width:16px;text-align:center;display:inline-block;">${text}</span>`;
+function shopSave(){try{localStorage.setItem('motohaus-shop-state',JSON.stringify(shopState));}catch(e){}}
+function shopLoad(){try{const saved=localStorage.getItem('motohaus-shop-state');if(saved)shopState=Object.assign(shopState,JSON.parse(saved));}catch(e){}}
+function shopStatus(product){return product.stock===0?'<span class="shop-badge muted">Out of stock</span>':product.stock<=product.min?'<span class="shop-badge warn">Low stock</span>':'<span class="shop-badge good">In stock</span>';}
+function shopProduct(id){return shopState.products.find(p=>p.id===id);}
+function shopPageAllowed(page){return shopNavigation().some(n=>n.page===page);}
+function shopNavigation(){
+  const common=[{page:'dashboard',label:'Dashboard',icon:'⌂'},{page:'inventory',label:'Inventory',icon:'▦'},{page:'pos',label:'Point of Sale',icon:'＋'},{page:'sales',label:'Sales',icon:'↗'},{page:'orders',label:'Orders',icon:'▤'},{page:'customers',label:'Customers',icon:'♙'}];
+  if(shopUser?.role==='Cashier')return common.filter(n=>['dashboard','pos','sales','customers','inventory'].includes(n.page));
+  if(shopUser?.role==='Inventory Staff')return common.filter(n=>['dashboard','inventory','purchases','suppliers'].includes(n.page)).concat([{page:'purchases',label:'Stock In',icon:'↓'},{page:'suppliers',label:'Suppliers',icon:'⌁'}]).filter((n,i,a)=>a.findIndex(x=>x.page===n.page)===i);
+  const management=[{page:'suppliers',label:'Suppliers',icon:'⌁'},{page:'purchases',label:'Purchases / Stock In',icon:'↓'},{page:'reports',label:'Reports',icon:'▥'},{page:'staff',label:'Staff & Audit',icon:'♙'}];
+  return common.concat(management);
+}
+function shopLogin(){
+  const card=document.querySelector('#loginScreen .login-card');
+  card.innerHTML=`<div class="logo"><div class="logo-mark"></div><div class="logo-text">MotoHaus Parts</div></div><h2>Workshop management</h2><p class="sub">Sign in to your motorcycle parts shop</p><div class="login-error" id="shopLoginError"></div><form id="shopLoginForm"><div class="form-group" style="margin-bottom:12px;"><label>Email</label><input type="email" id="shopEmail" required placeholder="owner@motohaus.demo" /></div><div class="form-group" style="margin-bottom:12px;"><label>Password</label><input type="password" id="shopPassword" required value="demo1234" /></div><button type="submit" class="btn btn-primary" style="width:100%;justify-content:center;">Sign in</button></form><div class="demo-hint">Demo roles: owner@motohaus.demo, cashier@motohaus.demo, inventory@motohaus.demo<br/><b>Password: demo1234</b></div>`;
+  document.getElementById('shopLoginForm').addEventListener('submit',e=>{e.preventDefault();const email=document.getElementById('shopEmail').value.trim().toLowerCase();const found=SHOP_USERS.find(u=>u.email===email&&u.password===document.getElementById('shopPassword').value);if(!found){document.getElementById('shopLoginError').textContent='Use one of the demo role accounts listed below.';document.getElementById('shopLoginError').classList.add('active');return;}shopUser=found;shopEnter();});
+}
+function shopEnter(){document.getElementById('loginScreen').style.display='none';document.getElementById('appScreen').style.display='flex';shopRenderShell();}
+function shopLogout(){shopUser=null;shopCart=[];document.getElementById('appScreen').style.display='none';document.getElementById('loginScreen').style.display='flex';shopLogin();}
+function shopRenderShell(){
+  const nav=shopNavigation();
+  if(!shopPageAllowed(shopPage))shopPage='dashboard';
+  document.getElementById('appScreen').innerHTML=`<aside class="sidebar"><div class="logo shop-brand"><div class="logo-mark"></div><div><div class="logo-text">MotoHaus Parts</div><div class="shop-role">${shopEscape(shopUser.role)}</div></div></div><div class="side-search"><span>⌕</span><input id="shopSideSearch" placeholder="Search parts" /></div><div class="nav-group"><div class="shop-nav-label">Workspace</div>${nav.map(n=>`<div class="shop-nav-item ${n.page===shopPage?'active':''}" data-shop-page="${n.page}" title="${n.label}">${shopIcon(n.icon)}${n.label}</div>`).join('')}</div><div class="promo"><div class="promo-circle"></div><div class="badge">MOTOHAUS°</div><h4>Parts that keep riders moving</h4><button class="promo-btn" id="shopQuickStock">Quick stock in</button></div><div class="logout" id="shopLogout">${shopIcon('↪')}Logout</div></aside><main class="main" id="shopMain"><div class="topbar"><h1 id="shopPageTitle"></h1><div class="top-right"><div class="top-search"><span>⌕</span><input id="shopTopSearch" placeholder="Search parts, SKU, customers" /></div><div class="icon-btn" id="shopNotif" title="Activity alerts">♢</div></div></div><div id="shopPageContent"></div></main><div id="shopModalRoot"></div>`;
+  document.getElementById('shopLogout').addEventListener('click',shopLogout);
+  document.querySelectorAll('[data-shop-page]').forEach(el=>el.addEventListener('click',()=>{shopPage=el.dataset.shopPage;shopRenderShell();}));
+  document.getElementById('shopQuickStock').addEventListener('click',()=>shopOpenModal('stock'));
+  ['shopSideSearch','shopTopSearch'].forEach(id=>document.getElementById(id).addEventListener('input',e=>{shopQuery=e.target.value.toLowerCase();document.getElementById('shopSideSearch').value=e.target.value;document.getElementById('shopTopSearch').value=e.target.value;shopRenderPage();}));
+  shopRenderPage();
+}
+function shopRenderPage(){
+  const titles={dashboard:'Dashboard',inventory:'Inventory',pos:'Point of Sale',sales:'Sales',orders:'Orders',customers:'Customers',suppliers:'Suppliers',purchases:'Purchases / Stock In',reports:'Reports',staff:'Staff & Audit'};
+  document.getElementById('shopPageTitle').textContent=titles[shopPage];
+  const content=document.getElementById('shopPageContent');
+  const views={dashboard:shopDashboard,inventory:shopInventory,pos:shopPos,sales:shopSales,orders:shopOrders,customers:shopCustomers,suppliers:shopSuppliers,purchases:shopPurchases,reports:shopReports,staff:shopStaff};
+  content.innerHTML=views[shopPage]();
+  if(shopPage==='dashboard'){const kicker=content.querySelector('.shop-kicker');if(kicker)kicker.textContent='MOTOHAUS PARTS / '+shopUser.role.toUpperCase()+' VIEW';}
+  shopBindPage();
+}
+function shopHead(kicker,title,action=''){return `<div class="shop-page-head"><div><p class="shop-kicker">${kicker}</p><h2>${title}</h2></div>${action?`<div class="shop-page-actions">${action}</div>`:''}</div>`;}
+/* function shopDashboard(){
+  const low=shopState.products.filter(p=>p.stock>0&&p.stock<=p.min).length, out=shopState.products.filter(p=>p.stock===0).length, today=shopState.sales.filter(s=>s.date==='2026-09-04'), todayTotal=today.reduce((a,s)=>a+s.total,0);
+  const recent=shopState.sales.slice(0,4); const popular=shopState.products.slice().sort((a,b)=>b.stock-a.stock).slice(0,4);
+  return `<div class="shop-page active">${shopHead('MOTOHAUS PARTS / OWNER VIEW','Good afternoon, ${shopEscape(shopUser.name.split(' ')[0])}',`<button class="btn btn-primary" data-action="pos">+ New sale</button>`)}<div class="shop-stat-grid"><div class="shop-stat-card"><div class="label">Today's sales</div><div class="value">${peso(todayTotal+1760)}</div><div class="meta">${today.length+2} transactions today</div></div><div class="shop-stat-card"><div class="label">Total products</div><div class="value">${shopState.products.length}</div><div class="meta">${shopState.products.reduce((a,p)=>a+p.stock,0)} units on hand</div></div><div class="shop-stat-card alert"><div class="label">Low stock items</div><div class="value">${low}</div><div class="meta">Review before next delivery</div></div><div class="shop-stat-card ${out?'alert':''}"><div class="label">Out of stock</div><div class="value">${out}</div><div class="meta">${shopState.purchases.filter(p=>p.status==='Ordered').length} purchase orders in motion</div></div></div><div class="shop-grid-2"><section class="shop-panel"><div class="shop-panel-head"><h3>Recent sales</h3><button class="btn btn-secondary" data-action="sales">View sales</button></div><div class="shop-table-wrap"><table class="shop-table"><thead><tr><th>Transaction</th><th>Customer</th><th>Total</th><th>Payment</th><th>Staff</th></tr></thead><tbody>${recent.map(s=>`<tr><td class="primary-cell">${s.id}</td><td>${shopEscape(s.customer)}</td><td>${peso(s.total)}</td><td><span class="shop-badge info">${s.payment}</span></td><td>${shopEscape(s.staff)}</td></tr>`).join('')}</tbody></table></div></section><section class="shop-panel"><div class="shop-panel-head"><h3>Stock attention</h3><button class="btn btn-secondary" data-action="inventory">Open inventory</button></div><div class="shop-list">${shopState.products.filter(p=>p.stock<=p.min).map(p=>`<div class="shop-list-row"><div><strong>${shopEscape(p.name)}</strong><span>${shopEscape(p.compatibility)}</span></div><div><strong>${p.stock} / ${p.min}</strong>${shopStatus(p)}</div></div>`).join('')||'<div class="shop-empty">All products are above minimum stock.</div>'}</div></section></div><div class="shop-panel"><div class="shop-panel-head"><h3>Inventory overview</h3><span class="hint">Most stocked categories</span></div><div class="shop-bar-list">${popular.map(p=>`<div class="shop-bar-line"><span>${shopEscape(p.name)}</span><div class="shop-bar-track"><div class="shop-bar-fill" style="width:${Math.min(100,p.stock/24*100)}%"></div></div><b>${p.stock}</b></div>`).join('')}</div></div></div>`;
+}
+function shopInventory(){const filtered=shopState.products.filter(p=>`${p.name} ${p.sku} ${p.brand} ${p.compatibility}`.toLowerCase().includes(shopQuery));return `<div class="shop-page active">${shopHead('CATALOG / STOCK CONTROL','Inventory',`<button class="btn btn-secondary" data-action="stock">+ Stock in</button><button class="btn btn-primary" data-action="product">+ Add product</button>`)}<div class="shop-toolbar"><input id="inventorySearch" value="${shopEscape(shopQuery)}" placeholder="Search product, SKU, brand or compatibility"/><select id="inventoryCategory"><option value="">All categories</option>${[...new Set(shopState.products.map(p=>p.category))].map(c=>`<option>${c}</option>`).join('')}</select></div><section class="shop-panel"><div class="shop-table-wrap"><table class="shop-table"><thead><tr><th>Part / SKU</th><th>Category</th><th>Compatibility</th><th>Price</th><th>Stock</th><th>Status</th><th></th></tr></thead><tbody>${filtered.map(p=>`<tr><td class="primary-cell">${shopEscape(p.name)}<small style="display:block;color:var(--text-dimmer);font-weight:400;margin-top:3px;">${p.sku} · ${p.brand}</small></td><td>${p.category}</td><td>${shopEscape(p.compatibility)}</td><td>${peso(p.price)}</td><td>${p.stock}</td><td>${shopStatus(p)}</td><td><div class="shop-page-actions"><button class="btn btn-secondary" data-product-view="${p.id}">View</button><button class="btn btn-secondary" data-product-edit="${p.id}">Edit</button></div></td></tr>`).join('')||`<tr><td colspan="7"><div class="shop-empty"><strong>No products found</strong>Try a different search or add a new part.</div></td></tr>`}</tbody></table></div></section></div>`;}
+function shopPos(){const total=shopCart.reduce((a,i)=>a+i.qty*i.price,0);return `<div class="shop-page active">${shopHead('SALES / COUNTER','Point of Sale',`<span class="hint">Demo checkout · inventory updates on completion</span>`)}<div class="shop-grid-2"><section class="shop-panel"><div class="shop-panel-head"><h3>Select parts</h3><span class="hint">${shopState.products.length} available products</span></div><div class="shop-toolbar"><input id="posSearch" value="${shopEscape(shopQuery)}" placeholder="Search by part name or SKU"/></div><div class="shop-list" style="margin-top:10px;">${shopState.products.filter(p=>p.stock>0&&`${p.name} ${p.sku} ${p.compatibility}`.toLowerCase().includes(shopQuery)).map(p=>`<div class="shop-list-row"><div><strong>${shopEscape(p.name)}</strong><span>${p.sku} · ${p.stock} in stock · ${peso(p.price)}</span></div><button class="btn btn-primary" data-cart-add="${p.id}">Add</button></div>`).join('')||'<div class="shop-empty">No matching parts in stock.</div>'}</div></section><section class="shop-panel"><div class="shop-panel-head"><h3>Current cart</h3><button class="btn btn-secondary" data-cart-clear>Clear</button></div><div class="shop-cart">${shopCart.map(i=>`<div class="shop-cart-item"><div><strong>${shopEscape(i.name)}</strong><span class="hint">${peso(i.price)} each</span></div><div class="shop-qty"><button data-cart-dec="${i.id}">−</button><span>${i.qty}</span><button data-cart-inc="${i.id}">+</button></div><b>${peso(i.qty*i.price)}</b></div>`).join('')||'<div class="shop-empty"><strong>Your cart is empty</strong>Select a part to begin a sale.</div>'}<div class="shop-total"><span>Total</span><strong>${peso(total)}</strong></div><button class="btn btn-primary" data-checkout ${!shopCart.length?'disabled':''}>Complete sale</button></div></section></div></div>`;}
+function shopSales(){return `<div class="shop-page active">${shopHead('TRANSACTIONS / PAYMENT HISTORY','Sales',`<button class="btn btn-primary" data-action="pos">+ New sale</button>`)}<section class="shop-panel"><div class="shop-toolbar"><input id="salesSearch" placeholder="Search transaction, customer or payment"/><select id="salesPayment"><option value="">All payments</option><option>Cash</option><option>GCash</option><option>Card</option><option>Bank Transfer</option></select></div><div class="shop-table-wrap" style="margin-top:12px;"><table class="shop-table"><thead><tr><th>Transaction</th><th>Customer</th><th>Items</th><th>Total</th><th>Payment</th><th>Date</th><th>Staff</th></tr></thead><tbody>${shopState.sales.map(s=>`<tr><td class="primary-cell">${s.id}</td><td>${shopEscape(s.customer)}</td><td>${s.items.reduce((a,i)=>a+i.qty,0)}</td><td>${peso(s.total)}</td><td><span class="shop-badge info">${s.payment}</span></td><td>${s.date}</td><td>${s.staff}</td></tr>`).join('')}</tbody></table></div></section></div>`;}
+function shopOrders(){return `<div class="shop-page active">${shopHead('FULFILLMENT / CUSTOMER ORDERS','Orders',`<button class="btn btn-primary" data-action="pos">+ New sale</button>`)}<section class="shop-panel"><div class="shop-table-wrap"><table class="shop-table"><thead><tr><th>Order ID</th><th>Customer</th><th>Items</th><th>Total</th><th>Payment</th><th>Order status</th><th>Date</th></tr></thead><tbody>${shopState.sales.map((s,i)=>`<tr><td class="primary-cell">${s.id}</td><td>${shopEscape(s.customer)}</td><td>${s.items.map(i=>shopProduct(i.productId)?.name).join(', ')}</td><td>${peso(s.total)}</td><td><span class="shop-badge good">Paid</span></td><td><span class="shop-badge ${i===0?'good':'info'}">${i===0?'Completed':'Ready'}</span></td><td>${s.date}</td></tr>`).join('')}</tbody></table></div></section></div>`;}
+function shopCustomers(){return `<div class="shop-page active">${shopHead('CUSTOMER RELATIONSHIPS / RIDER PROFILES','Customers',`<button class="btn btn-primary" data-action="customer">+ Add customer</button>`)}<section class="shop-panel"><div class="shop-toolbar"><input placeholder="Search customer, phone or motorcycle" id="customerSearch"/><button class="btn btn-secondary" data-action="customer">+ Add customer</button></div><div class="shop-table-wrap" style="margin-top:12px;"><table class="shop-table"><thead><tr><th>Customer</th><th>Contact</th><th>Motorcycle</th><th>Total purchases</th><th>Last transaction</th><th></th></tr></thead><tbody>${shopState.customers.map(c=>`<tr><td class="primary-cell">${shopEscape(c.name)}<small style="display:block;color:var(--text-dimmer);font-weight:400;margin-top:3px;">${c.id}</small></td><td>${c.phone}<small style="display:block;color:var(--text-dimmer);">${c.email}</small></td><td>${shopEscape(c.motorcycle)}</td><td>${peso(c.purchases)}</td><td>${c.last}</td><td><button class="btn btn-secondary" data-customer-view="${c.id}">View</button></td></tr>`).join('')}</tbody></table></div></section></div>`;}
+function shopSuppliers(){return `<div class="shop-page active">${shopHead('VENDOR NETWORK / SOURCING','Suppliers',`<button class="btn btn-primary" data-action="supplier">+ Add supplier</button>`)}<section class="shop-panel"><div class="shop-table-wrap"><table class="shop-table"><thead><tr><th>Supplier</th><th>Contact</th><th>Products supplied</th><th>Total purchases</th><th>Status</th><th></th></tr></thead><tbody>${shopState.suppliers.map(s=>`<tr><td class="primary-cell">${shopEscape(s.company)}<small style="display:block;color:var(--text-dimmer);font-weight:400;margin-top:3px;">${s.id}</small></td><td>${shopEscape(s.contact)}<small style="display:block;color:var(--text-dimmer);">${s.phone}</small></td><td>${s.products}</td><td>${peso(s.purchases)}</td><td><span class="shop-badge good">${s.status}</span></td><td><button class="btn btn-secondary" data-supplier-view="${s.id}">View</button></td></tr>`).join('')}</tbody></table></div></section></div>`;}
+function shopPurchases(){return `<div class="shop-page active">${shopHead('PROCUREMENT / INCOMING INVENTORY','Purchases & Stock In',`<button class="btn btn-primary" data-action="stock">+ Record stock in</button>`)}<section class="shop-panel"><div class="shop-panel-head"><h3>Purchase orders</h3><span class="hint">Receiving a purchase increases inventory</span></div><div class="shop-table-wrap"><table class="shop-table"><thead><tr><th>Purchase ID</th><th>Supplier</th><th>Line items</th><th>Total cost</th><th>Status</th><th>Date</th><th></th></tr></thead><tbody>${shopState.purchases.map(p=>`<tr><td class="primary-cell">${p.id}</td><td>${shopEscape(p.supplier)}</td><td>${p.items}</td><td>${peso(p.total)}</td><td><span class="shop-badge ${p.status==='Received'?'good':'info'}">${p.status}</span></td><td>${p.date}</td><td>${p.status==='Ordered'?`<button class="btn btn-primary" data-receive="${p.id}">Receive</button>`:'<span class="hint">Completed</span>'}</td></tr>`).join('')}</tbody></table></div></section></div>`;}
+function shopReports(){const revenue=shopState.sales.reduce((a,s)=>a+s.total,0)+28450;const inv=shopState.products.reduce((a,p)=>a+p.stock*p.cost,0);return `<div class="shop-page active">${shopHead('BUSINESS INTELLIGENCE / OWNER VIEW','Reports',`<button class="btn btn-secondary" data-action="sales">View transactions</button>`)}<div class="shop-stat-grid"><div class="shop-stat-card"><div class="label">Sales this month</div><div class="value">${peso(revenue)}</div><div class="meta">Across ${shopState.sales.length+31} transactions</div></div><div class="shop-stat-card"><div class="label">Inventory value</div><div class="value">${peso(inv)}</div><div class="meta">At current purchase cost</div></div><div class="shop-stat-card"><div class="label">Average sale</div><div class="value">${peso(revenue/(shopState.sales.length+31))}</div><div class="meta">Useful for counter planning</div></div></div><div class="shop-grid-2"><section class="shop-panel"><h3>Sales by category</h3><div class="shop-bar-list">${['Brake System','Oils & Fluids','Lighting','Chain & Sprocket','Tires & Wheels'].map((c,i)=>`<div class="shop-bar-line"><span>${c}</span><div class="shop-bar-track"><div class="shop-bar-fill" style="width:${86-i*14}%"></div></div><b>${peso(revenue*(.32-i*.045))}</b></div>`).join('')}</div></section><section class="shop-panel"><h3>Inventory health</h3><div class="shop-list"><div class="shop-list-row"><div><strong>Healthy stock</strong><span>Above minimum level</span></div><b>${shopState.products.filter(p=>p.stock>p.min).length}</b></div><div class="shop-list-row"><div><strong>Needs attention</strong><span>At or below minimum</span></div><b>${shopState.products.filter(p=>p.stock<=p.min).length}</b></div><div class="shop-list-row"><div><strong>Inventory turnover</strong><span>Rolling 30-day estimate</span></div><b>3.8x</b></div></div></section></div></div>`;}
+function shopStaff(){return `<div class="shop-page active">${shopHead('ACCESS / ACTIVITY','Staff & Audit Log') }<section class="shop-panel"><div class="shop-panel-head"><h3>Demo staff accounts</h3><span class="hint">Frontend demo roles; server authorization is required for production.</span></div><div class="shop-table-wrap"><table class="shop-table"><thead><tr><th>Staff member</th><th>Email</th><th>Role</th><th>Access</th></tr></thead><tbody>${SHOP_USERS.map(u=>`<tr><td class="primary-cell">${u.name}</td><td>${u.email}</td><td><span class="shop-badge info">${u.role}</span></td><td>${u.role==='Owner'?'All modules':u.role==='Cashier'?'POS, sales, customers':'Inventory, stock in, suppliers'}</td></tr>`).join('')}</tbody></table></div></section><section class="shop-panel"><h3>Recent activity</h3><div class="shop-list">${shopState.audit.map(a=>`<div class="shop-list-row"><div><strong>${a.action}</strong><span>${a.detail} · ${a.user}</span></div><span>${a.date}</span></div>`).join('')}</div></section></div>`;}
+*/
+function shopDashboard(){const low=shopState.products.filter(p=>p.stock>0&&p.stock<=p.min).length;const out=shopState.products.filter(p=>p.stock===0).length;const total=shopState.sales.reduce((sum,s)=>sum+s.total,0)+1760;return `<div class="shop-page active">${shopHead('MOTOHAUS PARTS / OWNER VIEW','Good afternoon, '+shopEscape(shopUser.name.split(' ')[0]),'<button class="btn btn-primary" data-action="pos">+ New sale</button>')}<div class="shop-stat-grid"><div class="shop-stat-card"><div class="label">Today\'s sales</div><div class="value">${peso(total)}</div><div class="meta">${shopState.sales.length+2} transactions today</div></div><div class="shop-stat-card"><div class="label">Total products</div><div class="value">${shopState.products.length}</div><div class="meta">${shopState.products.reduce((sum,p)=>sum+p.stock,0)} units on hand</div></div><div class="shop-stat-card alert"><div class="label">Low stock items</div><div class="value">${low}</div><div class="meta">Review before next delivery</div></div><div class="shop-stat-card ${out?'alert':''}"><div class="label">Out of stock</div><div class="value">${out}</div><div class="meta">Needs replenishment</div></div></div><div class="shop-grid-2"><section class="shop-panel"><div class="shop-panel-head"><h3>Recent sales</h3><button class="btn btn-secondary" data-action="sales">View sales</button></div><div class="shop-table-wrap"><table class="shop-table"><thead><tr><th>Transaction</th><th>Customer</th><th>Total</th><th>Payment</th></tr></thead><tbody>${shopState.sales.slice(0,4).map(s=>`<tr><td class="primary-cell">${s.id}</td><td>${shopEscape(s.customer)}</td><td>${peso(s.total)}</td><td><span class="shop-badge info">${s.payment}</span></td></tr>`).join('')}</tbody></table></div></section><section class="shop-panel"><div class="shop-panel-head"><h3>Stock attention</h3><button class="btn btn-secondary" data-action="inventory">Open inventory</button></div><div class="shop-list">${shopState.products.filter(p=>p.stock<=p.min).map(p=>`<div class="shop-list-row"><div><strong>${shopEscape(p.name)}</strong><span>${shopEscape(p.compatibility)}</span></div><div><strong>${p.stock} / ${p.min}</strong>${shopStatus(p)}</div></div>`).join('')||'<div class="shop-empty">All products are above minimum stock.</div>'}</div></section></div></div>`;}
+function shopInventory(){const rows=shopState.products.filter(p=>`${p.name} ${p.sku} ${p.brand} ${p.compatibility}`.toLowerCase().includes(shopQuery));return `<div class="shop-page active">${shopHead('CATALOG / STOCK CONTROL','Inventory','<button class="btn btn-secondary" data-action="stock">+ Stock in</button><button class="btn btn-primary" data-action="product">+ Add product</button>')}<div class="shop-toolbar"><input id="inventorySearch" value="${shopEscape(shopQuery)}" placeholder="Search product, SKU, brand or compatibility"/></div><section class="shop-panel"><div class="shop-table-wrap"><table class="shop-table"><thead><tr><th>Part / SKU</th><th>Category</th><th>Compatibility</th><th>Price</th><th>Stock</th><th>Status</th><th></th></tr></thead><tbody>${rows.map(p=>`<tr><td class="primary-cell">${shopEscape(p.name)}<small style="display:block;color:var(--text-dimmer);font-weight:400;">${p.sku} · ${p.brand}</small></td><td>${p.category}</td><td>${shopEscape(p.compatibility)}</td><td>${peso(p.price)}</td><td>${p.stock}</td><td>${shopStatus(p)}</td><td><button class="btn btn-secondary" data-product-view="${p.id}">View</button></td></tr>`).join('')||'<tr><td colspan="7"><div class="shop-empty"><strong>No products found</strong>Try another search or add a part.</div></td></tr>'}</tbody></table></div></section></div>`;}
+function shopPos(){const total=shopCart.reduce((sum,i)=>sum+i.qty*i.price,0);return `<div class="shop-page active">${shopHead('SALES / COUNTER','Point of Sale','<span class="hint">Demo checkout · inventory updates on completion</span>')}<div class="shop-grid-2"><section class="shop-panel"><h3>Select parts</h3><div class="shop-toolbar"><input id="posSearch" value="${shopEscape(shopQuery)}" placeholder="Search by part name or SKU"/></div><div class="shop-list">${shopState.products.filter(p=>p.stock>0&&`${p.name} ${p.sku}`.toLowerCase().includes(shopQuery)).map(p=>`<div class="shop-list-row"><div><strong>${shopEscape(p.name)}</strong><span>${p.sku} · ${p.stock} in stock · ${peso(p.price)}</span></div><button class="btn btn-primary" data-cart-add="${p.id}">Add</button></div>`).join('')}</div></section><section class="shop-panel"><div class="shop-panel-head"><h3>Current cart</h3><button class="btn btn-secondary" data-cart-clear>Clear</button></div><div class="shop-cart">${shopCart.map(i=>`<div class="shop-cart-item"><div><strong>${shopEscape(i.name)}</strong><span class="hint">${peso(i.price)} each</span></div><div class="shop-qty"><button data-cart-dec="${i.id}">−</button><span>${i.qty}</span><button data-cart-inc="${i.id}">+</button></div><b>${peso(i.qty*i.price)}</b></div>`).join('')||'<div class="shop-empty"><strong>Your cart is empty</strong>Select a part to begin.</div>'}<div class="shop-total"><span>Total</span><strong>${peso(total)}</strong></div><button class="btn btn-primary" data-checkout ${!shopCart.length?'disabled':''}>Complete sale</button></div></section></div></div>`;}
+function shopSales(){return `<div class="shop-page active">${shopHead('TRANSACTIONS / PAYMENT HISTORY','Sales','<button class="btn btn-primary" data-action="pos">+ New sale</button>')}<section class="shop-panel"><div class="shop-table-wrap"><table class="shop-table"><thead><tr><th>Transaction</th><th>Customer</th><th>Total</th><th>Payment</th><th>Date</th><th>Staff</th></tr></thead><tbody>${shopState.sales.map(s=>`<tr><td class="primary-cell">${s.id}</td><td>${shopEscape(s.customer)}</td><td>${peso(s.total)}</td><td><span class="shop-badge info">${s.payment}</span></td><td>${s.date}</td><td>${s.staff}</td></tr>`).join('')}</tbody></table></div></section></div>`;}
+function shopOrders(){return `<div class="shop-page active">${shopHead('FULFILLMENT / CUSTOMER ORDERS','Orders','<button class="btn btn-primary" data-action="pos">+ New sale</button>')}<section class="shop-panel"><div class="shop-table-wrap"><table class="shop-table"><thead><tr><th>Order ID</th><th>Customer</th><th>Items</th><th>Total</th><th>Status</th><th>Date</th></tr></thead><tbody>${shopState.sales.map((s,i)=>`<tr><td class="primary-cell">${s.id}</td><td>${shopEscape(s.customer)}</td><td>${s.items.reduce((sum,i)=>sum+i.qty,0)}</td><td>${peso(s.total)}</td><td><span class="shop-badge ${i?'info':'good'}">${i?'Ready':'Completed'}</span></td><td>${s.date}</td></tr>`).join('')}</tbody></table></div></section></div>`;}
+function shopCustomers(){return `<div class="shop-page active">${shopHead('CUSTOMER RELATIONSHIPS / RIDER PROFILES','Customers','<button class="btn btn-primary" data-action="customer">+ Add customer</button>')}<section class="shop-panel"><div class="shop-table-wrap"><table class="shop-table"><thead><tr><th>Customer</th><th>Contact</th><th>Motorcycle</th><th>Total purchases</th><th>Last transaction</th><th></th></tr></thead><tbody>${shopState.customers.map(c=>`<tr><td class="primary-cell">${shopEscape(c.name)}<small style="display:block;color:var(--text-dimmer);">${c.id}</small></td><td>${c.phone}</td><td>${shopEscape(c.motorcycle)}</td><td>${peso(c.purchases)}</td><td>${c.last}</td><td><button class="btn btn-secondary" data-customer-view="${c.id}">View</button></td></tr>`).join('')}</tbody></table></div></section></div>`;}
+function shopSuppliers(){return `<div class="shop-page active">${shopHead('VENDOR NETWORK / SOURCING','Suppliers','<button class="btn btn-primary" data-action="supplier">+ Add supplier</button>')}<section class="shop-panel"><div class="shop-table-wrap"><table class="shop-table"><thead><tr><th>Supplier</th><th>Contact</th><th>Products supplied</th><th>Total purchases</th><th>Status</th></tr></thead><tbody>${shopState.suppliers.map(s=>`<tr><td class="primary-cell">${shopEscape(s.company)}</td><td>${shopEscape(s.contact)}<small style="display:block;color:var(--text-dimmer);">${s.phone}</small></td><td>${s.products}</td><td>${peso(s.purchases)}</td><td><span class="shop-badge good">${s.status}</span></td></tr>`).join('')}</tbody></table></div></section></div>`;}
+function shopPurchases(){return `<div class="shop-page active">${shopHead('PROCUREMENT / INCOMING INVENTORY','Purchases & Stock In','<button class="btn btn-primary" data-action="stock">+ Record stock in</button>')}<section class="shop-panel"><div class="shop-table-wrap"><table class="shop-table"><thead><tr><th>Purchase ID</th><th>Supplier</th><th>Items</th><th>Total cost</th><th>Status</th><th>Date</th><th></th></tr></thead><tbody>${shopState.purchases.map(p=>`<tr><td class="primary-cell">${p.id}</td><td>${shopEscape(p.supplier)}</td><td>${p.items}</td><td>${peso(p.total)}</td><td><span class="shop-badge info">${p.status}</span></td><td>${p.date}</td><td>${p.status==='Ordered'?`<button class="btn btn-primary" data-receive="${p.id}">Receive</button>`:'<span class="hint">Completed</span>'}</td></tr>`).join('')}</tbody></table></div></section></div>`;}
+function shopReports(){const revenue=shopState.sales.reduce((sum,s)=>sum+s.total,0)+28450;const inventory=shopState.products.reduce((sum,p)=>sum+p.stock*p.cost,0);return `<div class="shop-page active">${shopHead('BUSINESS INTELLIGENCE / OWNER VIEW','Reports','<button class="btn btn-secondary" data-action="sales">View transactions</button>')}<div class="shop-stat-grid"><div class="shop-stat-card"><div class="label">Sales this month</div><div class="value">${peso(revenue)}</div><div class="meta">${shopState.sales.length+31} transactions</div></div><div class="shop-stat-card"><div class="label">Inventory value</div><div class="value">${peso(inventory)}</div><div class="meta">At purchase cost</div></div><div class="shop-stat-card"><div class="label">Average sale</div><div class="value">${peso(revenue/(shopState.sales.length+31))}</div><div class="meta">Rolling estimate</div></div></div><div class="shop-grid-2"><section class="shop-panel"><h3>Sales by category</h3><div class="shop-bar-list">${['Brake System','Oils & Fluids','Lighting','Chain & Sprocket','Tires & Wheels'].map((c,i)=>`<div class="shop-bar-line"><span>${c}</span><div class="shop-bar-track"><div class="shop-bar-fill" style="width:${86-i*14}%"></div></div><b>${peso(revenue*(.32-i*.045))}</b></div>`).join('')}</div></section><section class="shop-panel"><h3>Inventory health</h3><div class="shop-list"><div class="shop-list-row"><strong>Healthy stock</strong><b>${shopState.products.filter(p=>p.stock>p.min).length}</b></div><div class="shop-list-row"><strong>Needs attention</strong><b>${shopState.products.filter(p=>p.stock<=p.min).length}</b></div></div></section></div></div>`;}
+function shopStaff(){return `<div class="shop-page active">${shopHead('ACCESS / ACTIVITY','Staff & Audit Log')}<section class="shop-panel"><h3>Demo staff accounts</h3><div class="shop-table-wrap"><table class="shop-table"><thead><tr><th>Staff member</th><th>Email</th><th>Role</th><th>Access</th></tr></thead><tbody>${SHOP_USERS.map(u=>`<tr><td class="primary-cell">${u.name}</td><td>${u.email}</td><td><span class="shop-badge info">${u.role}</span></td><td>${u.role==='Owner'?'All modules':u.role==='Cashier'?'POS, sales, customers':'Inventory, stock in, suppliers'}</td></tr>`).join('')}</tbody></table></div></section><section class="shop-panel"><h3>Recent activity</h3><div class="shop-list">${shopState.audit.map(a=>`<div class="shop-list-row"><strong>${a.action}</strong><span>${a.detail} · ${a.user} · ${a.date}</span></div>`).join('')}</div></section></div>`;}
+function shopBindPage(){
+  document.querySelectorAll('[data-action]').forEach(el=>el.addEventListener('click',()=>{const a=el.dataset.action;if(a==='pos'||a==='sales'||a==='inventory'||a==='customers'||a==='suppliers'||a==='purchases'||a==='reports'){shopPage=a==='stock'?'purchases':a;shopRenderShell();}else shopOpenModal(a);}));
+  const search=document.getElementById('inventorySearch')||document.getElementById('posSearch');if(search)search.addEventListener('input',e=>{shopQuery=e.target.value.toLowerCase();shopRenderPage();});
+  document.querySelectorAll('[data-cart-add]').forEach(el=>el.addEventListener('click',()=>{const p=shopProduct(el.dataset.cartAdd),found=shopCart.find(i=>i.id===p.id);if(found){if(found.qty<p.stock)found.qty++;}else shopCart.push({id:p.id,name:p.name,price:p.price,qty:1});shopRenderPage();}));
+  document.querySelectorAll('[data-cart-inc]').forEach(el=>el.addEventListener('click',()=>{const item=shopCart.find(i=>i.id===el.dataset.cartInc),p=shopProduct(item.id);if(item.qty<p.stock)item.qty++;shopRenderPage();}));
+  document.querySelectorAll('[data-cart-dec]').forEach(el=>el.addEventListener('click',()=>{const item=shopCart.find(i=>i.id===el.dataset.cartDec);item.qty--;if(item.qty<1)shopCart=shopCart.filter(i=>i.id!==item.id);shopRenderPage();}));
+  document.querySelectorAll('[data-product-view]').forEach(el=>el.addEventListener('click',()=>shopOpenModal('productView',el.dataset.productView)));
+  document.querySelectorAll('[data-product-edit]').forEach(el=>el.addEventListener('click',()=>shopOpenModal('product',el.dataset.productEdit)));
+  document.querySelectorAll('[data-customer-view]').forEach(el=>el.addEventListener('click',()=>shopOpenModal('customerView',el.dataset.customerView)));
+  document.querySelectorAll('[data-supplier-view]').forEach(el=>el.addEventListener('click',()=>shopOpenModal('supplierView',el.dataset.supplierView)));
+  document.querySelectorAll('[data-receive]').forEach(el=>el.addEventListener('click',()=>{const p=shopState.purchases.find(x=>x.id===el.dataset.receive);p.status='Received';shopState.audit.unshift({action:'Purchase received',detail:p.id,user:shopUser.name,date:'2026-09-05 09:30'});shopSave();shopRenderPage();toast('Purchase received and inventory is ready for update.','success');}));
+  const checkout=document.querySelector('[data-checkout]');if(checkout)checkout.addEventListener('click',()=>shopOpenModal('checkout'));
+  const clear=document.querySelector('[data-cart-clear]');if(clear)clear.addEventListener('click',()=>{shopCart=[];shopRenderPage();});
+}
+function shopOpenModal(type,id=''){
+  const root=document.getElementById('shopModalRoot');let title='',body='',submit='';
+  if(type==='product'||type==='productView'){const p=shopProduct(id)||{};title=type==='productView'?'Part details':(id?'Edit part':'Add product');body=type==='productView'?`<div class="shop-list"><div><strong>${shopEscape(p.name)}</strong><span>${p.sku} · ${p.brand} · ${p.category}</span></div><p class="shop-modal-copy">${shopEscape(p.description)}</p><div class="shop-list-row"><div><strong>Compatibility</strong><span>${shopEscape(p.compatibility)}</span></div><b>${shopStatus(p)}</b></div><div class="shop-list-row"><div><strong>Supplier / shelf</strong><span>${p.supplier} · ${p.location}</span></div><b>${p.stock} units</b></div></div>`:`<form id="shopModalForm" class="shop-form-grid"><div class="shop-form-group"><label>Product name</label><input name="name" required value="${shopEscape(p.name||'')}" /></div><div class="shop-form-group"><label>SKU</label><input name="sku" required value="${shopEscape(p.sku||'')}" /></div><div class="shop-form-group"><label>Category</label><input name="category" required value="${shopEscape(p.category||'Brake System')}" /></div><div class="shop-form-group"><label>Brand</label><input name="brand" required value="${shopEscape(p.brand||'')}" /></div><div class="shop-form-group full"><label>Motorcycle compatibility</label><input name="compatibility" required value="${shopEscape(p.compatibility||'')}" placeholder="Honda Click 125 (2023-2025)" /></div><div class="shop-form-group"><label>Selling price</label><input name="price" type="number" min="0" required value="${p.price||''}" /></div><div class="shop-form-group"><label>Current stock</label><input name="stock" type="number" min="0" required value="${p.stock??''}" /></div><div class="shop-form-group"><label>Minimum stock</label><input name="min" type="number" min="0" required value="${p.min??5}" /></div><div class="shop-form-group"><label>Shelf / location</label><input name="location" value="${shopEscape(p.location||'A-01')}" /></div></form>`;submit=type==='productView'?'':`<button class="btn btn-primary" data-modal-submit>${id?'Save changes':'Add product'}</button>`;}
+  else if(type==='customer'||type==='customerView'){const c=shopState.customers.find(x=>x.id===id)||{};title=type==='customerView'?'Customer profile':(id?'Edit customer':'Add customer');body=type==='customerView'?`<div class="shop-list"><div class="shop-list-row"><div><strong>${shopEscape(c.name)}</strong><span>${c.id} · ${c.phone}</span></div><b>${peso(c.purchases)}</b></div><p class="shop-modal-copy">${c.email}<br/>Motorcycle: ${shopEscape(c.motorcycle)}<br/>Last transaction: ${c.last}</p></div>`:`<form id="shopModalForm" class="shop-form-grid"><div class="shop-form-group"><label>Full name</label><input name="name" required value="${shopEscape(c.name||'')}" /></div><div class="shop-form-group"><label>Contact number</label><input name="phone" required value="${shopEscape(c.phone||'')}" /></div><div class="shop-form-group"><label>Email</label><input name="email" type="email" value="${shopEscape(c.email||'')}" /></div><div class="shop-form-group"><label>Motorcycle</label><input name="motorcycle" required value="${shopEscape(c.motorcycle||'')}" placeholder="Yamaha NMAX 155" /></div></form>`;submit=type==='customerView'?'':'<button class="btn btn-primary" data-modal-submit>Add customer</button>';}
+  else if(type==='supplier'||type==='supplierView'){const s=shopState.suppliers.find(x=>x.id===id)||{};title=type==='supplierView'?'Supplier profile':(id?'Edit supplier':'Add supplier');body=type==='supplierView'?`<div class="shop-list"><div class="shop-list-row"><div><strong>${shopEscape(s.company)}</strong><span>${s.id} · ${s.contact}</span></div><b>${s.status}</b></div><p class="shop-modal-copy">${s.phone}<br/>${s.email}<br/>Products supplied: ${s.products}</p></div>`:`<form id="shopModalForm" class="shop-form-grid"><div class="shop-form-group"><label>Company name</label><input name="company" required value="${shopEscape(s.company||'')}" /></div><div class="shop-form-group"><label>Contact person</label><input name="contact" required value="${shopEscape(s.contact||'')}" /></div><div class="shop-form-group"><label>Phone</label><input name="phone" required value="${shopEscape(s.phone||'')}" /></div><div class="shop-form-group"><label>Email</label><input name="email" type="email" value="${shopEscape(s.email||'')}" /></div></form>`;submit=type==='supplierView'?'':'<button class="btn btn-primary" data-modal-submit>Add supplier</button>';}
+  else if(type==='stock'){title='Record stock in';body=`<form id="shopModalForm" class="shop-form-grid"><div class="shop-form-group full"><label>Product</label><select name="productId">${shopState.products.map(p=>`<option value="${p.id}">${p.name} · ${p.sku}</option>`).join('')}</select></div><div class="shop-form-group"><label>Quantity received</label><input name="qty" type="number" min="1" required value="5" /></div><div class="shop-form-group"><label>Supplier</label><select name="supplier">${shopState.suppliers.map(s=>`<option>${s.company}</option>`).join('')}</select></div></form>`;submit='<button class="btn btn-primary" data-modal-submit>Receive stock</button>';}
+  else if(type==='checkout'){const total=shopCart.reduce((a,i)=>a+i.qty*i.price,0);title='Complete sale';body=`<form id="shopModalForm" class="shop-form-grid"><div class="shop-form-group full"><label>Customer</label><select name="customer"><option>Walk-in customer</option>${shopState.customers.map(c=>`<option>${c.name}</option>`).join('')}</select></div><div class="shop-form-group"><label>Payment method</label><select name="payment"><option>Cash</option><option>GCash</option><option>Card</option><option>Bank Transfer</option></select></div><div class="shop-form-group"><label>Amount received</label><input name="received" type="number" min="${total}" value="${total}" required /></div><div class="shop-receipt full"><h4>Transaction summary</h4><p>${shopCart.map(i=>`${i.qty} × ${i.name} — ${peso(i.qty*i.price)}`).join('<br/>')}</p><p><b>Total: ${peso(total)}</b></p></div></form>`;submit='<button class="btn btn-primary" data-modal-submit>Complete sale</button>';}
+  root.innerHTML=`<div class="modal-overlay active" id="shopModalOverlay"><div class="modal"><h3>${title}</h3>${body}<div class="modal-actions"><button class="btn btn-secondary" data-modal-close>Cancel</button>${submit}</div></div></div>`;
+  const overlay=document.getElementById('shopModalOverlay');overlay.querySelector('[data-modal-close]').addEventListener('click',()=>root.innerHTML='');const action=overlay.querySelector('[data-modal-submit]');if(action)action.addEventListener('click',()=>shopModalSubmit(type,id));
+}
+function shopModalSubmit(type,id){const form=document.getElementById('shopModalForm');if(!form||!form.reportValidity())return;const data=Object.fromEntries(new FormData(form));if(type==='product'){const p={id:id||'P-'+Date.now().toString().slice(-5),sku:data.sku,name:data.name,category:data.category,brand:data.brand,compatibility:data.compatibility,supplier:'RiderPro Supply',price:Number(data.price),cost:Number(data.price)*.62,stock:Number(data.stock),min:Number(data.min),location:data.location,description:'Demo catalog part.'};if(id)shopState.products=shopState.products.map(x=>x.id===id?Object.assign(x,p):x);else shopState.products.unshift(p);shopState.audit.unshift({action:id?'Product updated':'Product added',detail:p.name,user:shopUser.name,date:'2026-09-05 09:30'});}
+  if(type==='customer'){const c={id:id||'C-'+String(shopState.customers.length+1).padStart(3,'0'),name:data.name,phone:data.phone,email:data.email,motorcycle:data.motorcycle,purchases:0,last:'—'};if(id)shopState.customers=shopState.customers.map(x=>x.id===id?Object.assign(x,c):x);else shopState.customers.push(c);}
+  if(type==='supplier'){const s={id:id||'S-'+String(shopState.suppliers.length+1).padStart(3,'0'),company:data.company,contact:data.contact,phone:data.phone,email:data.email,status:'Active',products:0,purchases:0};if(id)shopState.suppliers=shopState.suppliers.map(x=>x.id===id?Object.assign(x,s):x);else shopState.suppliers.push(s);}
+  if(type==='stock'){const p=shopProduct(data.productId);p.stock+=Number(data.qty);shopState.audit.unshift({action:'Stock received',detail:p.name,user:shopUser.name,date:'2026-09-05 09:30'});}
+  if(type==='checkout'){const total=shopCart.reduce((a,i)=>a+i.qty*i.price,0);shopCart.forEach(i=>{const p=shopProduct(i.id);p.stock-=i.qty;});const txn={id:'TXN-'+Date.now().toString().slice(-8),customer:data.customer,items:shopCart.map(i=>({productId:i.id,qty:i.qty})),total,payment:data.payment,staff:shopUser.name,date:'2026-09-05'};shopState.sales.unshift(txn);shopState.audit.unshift({action:'Sale completed',detail:txn.id,user:shopUser.name,date:'2026-09-05 09:30'});shopCart=[];}
+  shopSave();document.getElementById('shopModalRoot').innerHTML='';shopRenderPage();toast(type==='checkout'?'Sale completed and inventory updated.':'Saved successfully.','success');
+}
+function shopStart(){shopLoad();shopLogin();window.enterApp=shopEnter;window.doLogout=shopLogout;document.title='MotoHaus Parts — Shop Management';}
+shopStart();
+</script>
+</body>
+</html>
