@@ -9,7 +9,7 @@ import { t as twMerge } from "../_libs/tailwind-merge.mjs";
 import { a as DialogOverlay$1, i as DialogDescription$1, n as DialogClose, o as DialogPortal$1, r as DialogContent$1, s as DialogTitle$1, t as Dialog$1 } from "../_libs/@radix-ui/react-dialog+[...].mjs";
 import { a as Trigger, i as Root2, n as Item2, r as Portal2, t as Content2 } from "../_libs/@radix-ui/react-dropdown-menu+[...].mjs";
 import { a as XAxis, c as Bar, d as ResponsiveContainer, f as Tooltip, i as YAxis, l as Pie, n as PieChart, o as Area, r as BarChart, s as CartesianGrid, t as AreaChart, u as Cell } from "../_libs/recharts+[...].mjs";
-//#region node_modules/.nitro/vite/services/ssr/assets/routes-HWFTsarT.js
+//#region node_modules/.nitro/vite/services/ssr/assets/routes-BYAGJFK-.js
 var import_react = /* @__PURE__ */ __toESM(require_react());
 var import_jsx_runtime = require_jsx_runtime();
 function peso(n) {
@@ -1326,7 +1326,14 @@ var useShop = create()(persist((set, get) => ({
 	}
 }), {
 	name: "motohaus-v3",
-	storage: createJSONStorage(() => localStorage),
+	storage: createJSONStorage(() => {
+		if (typeof window === "undefined") return {
+			getItem: () => null,
+			setItem: () => {},
+			removeItem: () => {}
+		};
+		return localStorage;
+	}),
 	skipHydration: true,
 	partialize: (s) => ({
 		user: s.user,
@@ -4899,9 +4906,10 @@ function Home() {
 	const hydrated = useShop((s) => s.hydrated);
 	const user = useShop((s) => s.user);
 	(0, import_react.useEffect)(() => {
-		useShop.persist.rehydrate().finally(() => {
+		(async () => {
+			await useShop.persist.rehydrate();
 			useShop.getState().setHydrated();
-		});
+		})();
 	}, []);
 	if (!hydrated) return /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
 		className: "flex min-h-dvh items-center justify-center bg-[#050507] text-fg",
